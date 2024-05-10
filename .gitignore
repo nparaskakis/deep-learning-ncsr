@@ -1,5 +1,5 @@
 *.code-workspace
 *.DS_Store
+/data
 baseline_melspectograms/__pycache__
-baseline_melspectograms/data
-baseline_melspectograms/runs
+baseline_melspectograms/logs

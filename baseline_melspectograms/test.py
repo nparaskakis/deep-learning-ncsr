@@ -9,8 +9,9 @@ from torchmetrics import Accuracy, Precision, Recall, F1Score
 
 # Function for evaluating the model on the test set
 
-def test(model, test_data_loader, loss_fn, device):
+def test(model, data_loader, loss_fn, device, subset_name, timestamp):
     
+    model = model.to(device)
     # Initialize metric calculators for accuracy, precision, recall, and F1 score.
     accuracy = Accuracy(task="multiclass", num_classes=27).to(device)
     precision = Precision(task="multiclass", num_classes=27, average='macro').to(device)
@@ -26,7 +27,7 @@ def test(model, test_data_loader, loss_fn, device):
     # Disable gradient computation for inference
     with torch.no_grad():
         
-        for i, data in enumerate(test_data_loader):
+        for i, data in enumerate(data_loader):
             
             # Unpack the batch of test data
             inputs, targets = data
@@ -65,7 +66,17 @@ def test(model, test_data_loader, loss_fn, device):
     recall.reset()
     f1_score.reset()
 
+    # Open a file and write the results
+    with open(f'logs/fsc22_{timestamp}/metadata/eval_on_{subset_name}_set.txt', 'w') as file:
+        file.write(f'Evaluation on {subset_name} set:\n')
+        file.write(f'AVG Loss: {avg_test_loss_per_batch}\n')
+        file.write(f'Accuracy: {final_accuracy}\n')
+        file.write(f'Precision: {final_precision}\n')
+        file.write(f'Recall: {final_recall}\n')
+        file.write(f'F1 Score: {final_f1_score}\n')
+    
     # Print the computed metrics
+    print(f'\nEvaluation on {subset_name} set:\n')
     print(f'AVG Loss: {avg_test_loss_per_batch}')
     print(f'Accuracy: {final_accuracy}')
     print(f'Precision: {final_precision}')

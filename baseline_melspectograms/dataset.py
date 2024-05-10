@@ -23,7 +23,10 @@ class FSC22Dataset(Dataset):
         self.annotations = pd.read_csv(annotations_file)
         self.audio_dir = audio_dir
         self.device = device
-        self.transformation = transformation.to(self.device)
+        if self.device == "mps":
+            self.transformation = transformation.to("cpu")
+        else:
+            self.transformation = transformation.to(self.device)
         self.target_sample_rate = target_sample_rate
         self.num_samples = num_samples
         # Mapping from numeric labels to categorical labels
@@ -40,7 +43,10 @@ class FSC22Dataset(Dataset):
         label = self._get_audio_sample_label(index)
         signal, sr = torchaudio.load(audio_sample_path)
         signal = self._preprocess_signal(signal, sr)
-        signal = self.transformation(signal)
+        if self.device == "mps":
+            signal = self.transformation(signal.to("cpu")).to(self.device)
+        else:
+            signal = self.transformation(signal)
         return signal, label
 
     def _preprocess_signal(self, signal: torch.Tensor, sr: int) -> torch.Tensor:
@@ -95,13 +101,13 @@ class FSC22Dataset(Dataset):
 
 # Functions to create DataLoader instances for training, validation, and testing.
 
-def get_data_loaders(dataset: FSC22Dataset, train_size: float, val_size: float, test_size: float, batch_size: int) -> tuple[DataLoader, DataLoader, DataLoader]:
+def get_data_loaders(dataset: FSC22Dataset, train_size: float, val_size: float, test_size: float, batch_size: int, random_seed: int = 42) -> tuple[DataLoader, DataLoader, DataLoader]:
     
     assert train_size + val_size + test_size == 1, "The sum of sizes must be 1."
 
     # Split data into train, validation, and test sets
-    train_val, test_data = train_test_split(dataset.annotations, test_size=test_size, stratify=dataset.annotations['Class ID'])
-    train_data, val_data = train_test_split(train_val, test_size=val_size/(train_size + val_size), stratify=train_val['Class ID'])
+    train_val, test_data = train_test_split(dataset.annotations, test_size=test_size, stratify=dataset.annotations['Class ID'], random_state=random_seed)
+    train_data, val_data = train_test_split(train_val, test_size=val_size/(train_size + val_size), stratify=train_val['Class ID'], random_state=random_seed)
 
     # Creating data indices for training and validation splits
     train_indices = train_data.index.tolist()

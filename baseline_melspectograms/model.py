@@ -38,25 +38,11 @@ class CNNNetwork(Module):
             nn.ReLU(),
             nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
         
         self.layers8910 = nn.Sequential(
             nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2)
-        )
-        
-        self.layers111213 = nn.Sequential(
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
@@ -66,8 +52,12 @@ class CNNNetwork(Module):
         # Flatten layer to convert matrix into a vector for the fully connected layer
         self.flatten = nn.Flatten()
         
+        with torch.no_grad():
+            self.flattened_size = self.flatten(self.layers8910(self.layers567(self.layers34(self.layers12(torch.zeros(1, 1, 128, 216)))))).shape[1]
+
+        
         self.classifier = nn.Sequential(
-            nn.Linear(in_features=4*6*512, out_features=4096),  # Adjust the size according to your mel-spectrogram dimensions after pooling
+            nn.Linear(in_features=self.flattened_size, out_features=4096),  # Adjust the size according to your mel-spectrogram dimensions after pooling
             nn.ReLU(),
             nn.Dropout(),
             nn.Linear(in_features=4096, out_features=4096),
@@ -84,11 +74,10 @@ class CNNNetwork(Module):
         x = self.layers34(x)
         x = self.layers567(x)
         x = self.layers8910(x)
-        x = self.layers111213(x)
         x = self.flatten(x)
         x = self.classifier(x)
-        predictions = self.softmax(x)
-        return predictions
+        # predictions = self.softmax(x)
+        return x
 
 
 
