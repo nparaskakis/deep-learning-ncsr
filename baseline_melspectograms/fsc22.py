@@ -5,8 +5,8 @@ from dataset import *
 
 if __name__ == "__main__":
     
-    ANNOTATIONS_FILE = "data/metadata/metadata_FSC22.csv"
-    AUDIO_DIR = "data/audio"
+    ANNOTATIONS_FILE = "./data/metadata/metadata_FSC22.csv"
+    AUDIO_DIR = "./data/audio"
     SAMPLE_RATE = 22050
     NUM_SAMPLES = 22050*5
     
