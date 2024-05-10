@@ -1,4 +1,5 @@
-baseline_melspectograms/__pycache__
 .code-workspace
 .DS_Store
+baseline_melspectograms/__pycache__
 baseline_melspectograms/data
+baseline_melspectograms/runs
