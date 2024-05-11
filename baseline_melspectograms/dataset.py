@@ -1,17 +1,23 @@
 # Import necessary libraries
 
 import os
+
 import torch
 from torch.utils.data import Dataset
-import pandas as pd
-import torchaudio
-from torch.utils.data import DataLoader, random_split, Subset
-from model import *
-from train import *
-from test import *
-from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, SubsetRandomSampler
+from torch.utils.data import DataLoader
+
+import torchaudio
+
 import numpy as np
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+
+from baseline_melspectograms.model import *
+from baseline_melspectograms.training import *
+from baseline_melspectograms.testing import *
+
 
 
 # Class for the ESC50 Dataset

@@ -1,8 +1,11 @@
-import torchaudio
-from test import *
-from dataset import *
-from train import *
 import os
+
+import torchaudio
+
+from baseline_melspectograms.model import *
+from baseline_melspectograms.dataset import *
+from baseline_melspectograms.training import *
+from baseline_melspectograms.testing import *
 
 def write_config_to_file(config, file_path):
     with open(file_path, 'w') as f:

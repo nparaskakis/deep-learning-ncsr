@@ -1,11 +1,11 @@
 # Import necessary libraries
 
-from torch.utils.tensorboard import SummaryWriter
-from datetime import datetime
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from model import *
+from torch.utils.tensorboard import SummaryWriter
+
+from baseline_melspectograms.model import *
 
 
 
