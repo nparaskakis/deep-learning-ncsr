@@ -14,9 +14,9 @@ import pandas as pd
 
 from sklearn.model_selection import train_test_split
 
-from baseline_melspectograms.model import *
-from baseline_melspectograms.training import *
-from baseline_melspectograms.testing import *
+from model import *
+from training import *
+from testing import *
 
 
 
