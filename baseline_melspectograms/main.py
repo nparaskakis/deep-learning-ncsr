@@ -9,6 +9,8 @@ from dataset import *
 from training import *
 from testing import *
 
+from torchviz import make_dot
+
 def write_config_to_file(config, file_path):
     with open(file_path, 'w') as f:
         for key, value in config.items():
@@ -89,6 +91,11 @@ if __name__ == "__main__":
         batch_size=config["BATCH_SIZE"]
     )
     
+    x = torch.randn(1, 1, 128, 216).to(config["DEVICE"])
+    out = cnn(x)
+    dot = make_dot(out, params=dict(list(cnn.named_parameters()) + [('input', x)]))
+    dot.render('cnn_architecture', format='png', directory=f'logs/fsc22_{timestamp}/metadata')
+    
     model = train(cnn, train_data_loader, val_data_loader, loss_fn, optimiser, config["DEVICE"], config["EPOCHS"], timestamp)
     
     test(model, test_data_loader, loss_fn, config["DEVICE"], "test", timestamp)
@@ -101,6 +108,6 @@ if __name__ == "__main__":
     
     config_file_path = f'logs/fsc22_{timestamp}/metadata/configurations.txt'
     write_config_to_file(config, config_file_path)
-    
+
     # saved_model = CNNNetwork()
     # saved_model.load_state_dict(torch.load(f'logs/fsc22_{timestamp}/best_model/best_model.pth'))
