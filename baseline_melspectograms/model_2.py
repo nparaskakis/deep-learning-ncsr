@@ -11,7 +11,7 @@ from torch.nn import Module
 
 # CNN Model Architecture
 
-class CNNNetwork(Module):
+class CNNNetwork2(Module):
     
     def __init__(self):
         
@@ -88,7 +88,7 @@ class CNNNetwork(Module):
 if __name__ == "__main__":
     
     # Instantiate the CNN network
-    cnn = CNNNetwork()
+    cnn = CNNNetwork2()
     
     # Print a summary of the network architecture, specifying input size (channels, height, width)
     summary(cnn.cpu(), (1, 128, 216))  # Example input size (1 channel, 128x216 image/spectrogram)

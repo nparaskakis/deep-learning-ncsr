@@ -5,14 +5,12 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-from model import *
-
 
 
 
 # Function to train the model for a single epoch
 
-def train_single_epoch(model: torch.nn.Module, train_data_loader: DataLoader, loss_fn: callable, optimiser: torch.optim.Optimizer, device: torch.device | str) -> float:
+def train_single_epoch(model: torch.nn.Module, train_data_loader: DataLoader, loss_fn: callable, optimiser: torch.optim.Optimizer,  device: torch.device | str) -> float:
     
     # Cumulative loss for the epoch
     cum_train_loss = 0.0
@@ -55,7 +53,7 @@ def train_single_epoch(model: torch.nn.Module, train_data_loader: DataLoader, lo
 
 # Function to train the model along with validating its performance (monitoring the validation loss)
 
-def train(model: torch.nn.Module, train_data_loader: DataLoader, val_data_loader: DataLoader, loss_fn: callable, optimiser: torch.optim.Optimizer, device: torch.device | str, epochs: int, timestamp):
+def train(model: torch.nn.Module, train_data_loader: DataLoader, val_data_loader: DataLoader, loss_fn: callable, optimiser: torch.optim.Optimizer, scheduler: torch.optim.lr_scheduler, device: torch.device | str, epochs: int, timestamp, early_stopping_patience, min_delta):
     
     # TensorBoard writer instance
     writer = SummaryWriter(f'logs/fsc22_{timestamp}/training_losses')
@@ -63,6 +61,7 @@ def train(model: torch.nn.Module, train_data_loader: DataLoader, val_data_loader
     # Initialize best validation loss for model saving
     best_val_loss = np.inf
     best_model_path = ""
+    best_model = model
     
     # Open a text file for output
     with open(f'logs/fsc22_{timestamp}/metadata/training_log.txt', 'w') as log_file:
@@ -126,15 +125,24 @@ def train(model: torch.nn.Module, train_data_loader: DataLoader, val_data_loader
             
             writer.flush()
             
+            scheduler.step(avg_val_loss_per_batch)
+            
             # Save model if validation loss improved
-            if avg_val_loss_per_batch < best_val_loss:
+            if  (best_val_loss - avg_val_loss_per_batch > min_delta):
                 best_val_loss = avg_val_loss_per_batch
+                early_stopping_counter = 0
                 best_model_path = f'logs/fsc22_{timestamp}/saved_models/model_{epoch_number+1}.pth'
+                best_model = model
                 torch.save(model.state_dict(), best_model_path)
+            else:
+                early_stopping_counter += 1
+            
+            if early_stopping_counter >= early_stopping_patience:
+                print("Early stopping triggered.")
+                break
     
     print("Finished training")
     
-    best_model = CNNNetwork()
     best_model.load_state_dict(torch.load(best_model_path))
     
     return best_model
