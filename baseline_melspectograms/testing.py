@@ -73,13 +73,13 @@ def test(model, data_loader, loss_fn, device, subset_name, timestamp):
     recall.reset()
     f1_score.reset()
     
-    # Compute confusion matrix
-    cm = confusion_matrix(all_labels, all_preds)
+    # # Compute confusion matrix
+    # cm = confusion_matrix(all_labels, all_preds)
 
-    # Plot confusion matrix
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[i for i in range(27)])
-    disp.plot(cmap=plt.cm.Blues)
-    plt.show()
+    # # Plot confusion matrix
+    # disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[i for i in range(27)])
+    # disp.plot(cmap=plt.cm.Blues)
+    # plt.show()
 
     # Open a file and write the results
     with open(f'logs/fsc22_{timestamp}/metadata/eval_on_{subset_name}_set.txt', 'w') as file:
