@@ -62,7 +62,8 @@ def train(model: torch.nn.Module, train_data_loader: DataLoader, val_data_loader
     best_val_loss = np.inf
     best_model_path = ""
     best_model = model
-    
+    early_stopping_counter = 0
+
     # Open a text file for output
     with open(f'logs/fsc22_{timestamp}/metadata/training_log.txt', 'w') as log_file:
         

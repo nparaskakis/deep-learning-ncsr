@@ -61,7 +61,7 @@ def main(args):
         "N_MELS": 128,
         
         "BATCH_SIZE": 16,
-        "EPOCHS": 20,
+        "EPOCHS": 2,
         "LEARNING_RATE": 1e-3,
         
         "TRAIN_SIZE": 0.7,

@@ -2,7 +2,9 @@
 
 import torch
 from torchmetrics import Accuracy, Precision, Recall, F1Score
-
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 
@@ -24,6 +26,9 @@ def test(model, data_loader, loss_fn, device, subset_name, timestamp):
     # Set the model to evaluation mode
     model.eval()
 
+    all_preds = []
+    all_labels = []
+
     # Disable gradient computation for inference
     with torch.no_grad():
         
@@ -41,6 +46,8 @@ def test(model, data_loader, loss_fn, device, subset_name, timestamp):
             # Get the predicted classes
             preds = torch.argmax(outputs, dim=1)
             
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(targets.cpu().numpy())
             # Compute the loss between outputs and targets
             loss = loss_fn(outputs, targets)
             
@@ -65,6 +72,14 @@ def test(model, data_loader, loss_fn, device, subset_name, timestamp):
     precision.reset()
     recall.reset()
     f1_score.reset()
+    
+    # Compute confusion matrix
+    cm = confusion_matrix(all_labels, all_preds)
+
+    # Plot confusion matrix
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[i for i in range(27)])
+    disp.plot(cmap=plt.cm.Blues)
+    plt.show()
 
     # Open a file and write the results
     with open(f'logs/fsc22_{timestamp}/metadata/eval_on_{subset_name}_set.txt', 'w') as file:
