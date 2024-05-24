@@ -65,7 +65,7 @@ def main(args):
         "N_MELS": 128,
 
         "BATCH_SIZE": 16,
-        "EPOCHS": 2,
+        "EPOCHS": 10,
         "LEARNING_RATE": 1e-3,
 
         "TRAIN_SIZE": 0.7,
@@ -77,8 +77,7 @@ def main(args):
         "SCHEDULER_PATIENCE": 10,
         "EARLY_STOPPING_PATIENCE": 20,
 
-        "DEVICE": "cuda" if torch.cuda.is_available() else "cpu",
-        # else "mps" if torch.backends.mps.is_available() else "cpu"
+        "DEVICE": "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     }
     print(f"Using device {config['DEVICE']}")
 
