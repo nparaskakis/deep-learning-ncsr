@@ -1,0 +1,12 @@
+pandas
+numpy
+torch
+matplotlib
+audiomentations
+librosa
+torchaudio
+torchsummary
+tensorboard
+torchmetrics
+sklearn
+torchviz

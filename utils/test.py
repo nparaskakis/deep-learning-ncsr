@@ -1,5 +1,3 @@
-# Import necessary libraries
-
 import torch
 from torchmetrics import Accuracy, Precision, Recall, F1Score
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -7,22 +5,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-
-
 # Function for evaluating the model on the test set
 
 def test(model, data_loader, loss_fn, device, subset_name, timestamp):
-    
+
     model = model.to(device)
     # Initialize metric calculators for accuracy, precision, recall, and F1 score.
     accuracy = Accuracy(task="multiclass", num_classes=27).to(device)
-    precision = Precision(task="multiclass", num_classes=27, average='macro').to(device)
-    recall = Recall(task="multiclass", num_classes=27, average='macro').to(device)
-    f1_score = F1Score(task="multiclass", num_classes=27, average='macro').to(device)
+    precision = Precision(task="multiclass", num_classes=27,
+                          average='macro').to(device)
+    recall = Recall(task="multiclass", num_classes=27,
+                    average='macro').to(device)
+    f1_score = F1Score(task="multiclass", num_classes=27,
+                       average='macro').to(device)
 
     # Cumulative loss for the test dataset
     cum_test_loss = 0
-    
+
     # Set the model to evaluation mode
     model.eval()
 
@@ -31,29 +30,29 @@ def test(model, data_loader, loss_fn, device, subset_name, timestamp):
 
     # Disable gradient computation for inference
     with torch.no_grad():
-        
+
         for i, data in enumerate(data_loader):
-            
+
             # Unpack the batch of test data
             inputs, targets = data
-            
+
             # Move data to the specified device
             inputs, targets = inputs.to(device), targets.to(device)
-            
+
             # Forward pass: compute the model's outputs
             outputs = model(inputs)
-            
+
             # Get the predicted classes
             preds = torch.argmax(outputs, dim=1)
-            
+
             all_preds.extend(preds.cpu().numpy())
             all_labels.extend(targets.cpu().numpy())
             # Compute the loss between outputs and targets
             loss = loss_fn(outputs, targets)
-            
+
             # Accumulate the batch loss
             cum_test_loss += loss.item()
-            
+
             # Update metric calculators
             accuracy.update(preds, targets)
             precision.update(preds, targets)
@@ -72,7 +71,7 @@ def test(model, data_loader, loss_fn, device, subset_name, timestamp):
     precision.reset()
     recall.reset()
     f1_score.reset()
-    
+
     # # Compute confusion matrix
     # cm = confusion_matrix(all_labels, all_preds)
 
@@ -89,7 +88,7 @@ def test(model, data_loader, loss_fn, device, subset_name, timestamp):
         file.write(f'Precision: {final_precision}\n')
         file.write(f'Recall: {final_recall}\n')
         file.write(f'F1 Score: {final_f1_score}\n')
-    
+
     # Print the computed metrics
     print(f'\nEvaluation on {subset_name} set:\n')
     print(f'AVG Loss: {avg_test_loss_per_batch}')
@@ -97,5 +96,5 @@ def test(model, data_loader, loss_fn, device, subset_name, timestamp):
     print(f'Precision: {final_precision}')
     print(f'Recall: {final_recall}')
     print(f'F1 Score: {final_f1_score}')
-    
+
     return
