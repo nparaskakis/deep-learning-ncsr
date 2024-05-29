@@ -10,3 +10,4 @@ tensorboard
 torchmetrics
 sklearn
 torchviz
+torch-audiomentations

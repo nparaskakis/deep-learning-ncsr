@@ -13,25 +13,97 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 # from main import *
-from .train import *
-from .test import *
+from train import *
+from test import *
 
 
-# Class for the FSC22 Dataset
+# class FSC22Dataset(Dataset):
+
+#     def __init__(self, annotations_file: str, audio_dir: str, transformation: callable, target_sample_rate: int, num_samples: int, device: str | torch.device):
+
+#         self.annotations = pd.read_csv(annotations_file)
+#         self.audio_dir = audio_dir
+#         self.device = device
+#         if self.device == "mps":
+#             self.transformation = transformation.to("cpu")
+#         else:
+#             self.transformation = transformation.to(self.device)
+#         self.target_sample_rate = target_sample_rate
+#         self.num_samples = num_samples
+#         # Mapping from numeric labels to categorical labels
+#         self.class_mapping = self.annotations[['Class ID', 'Class Name']].drop_duplicates(
+#         ).set_index('Class ID')['Class Name'].to_dict()
+#         self.class_mapping = {
+#             k-1: self.class_mapping[k] for k in sorted(self.class_mapping)}
+
+#     def __len__(self) -> int:
+#         return len(self.annotations)
+
+#     def __getitem__(self, index: int) -> tuple[torch.Tensor, int]:
+
+#         audio_sample_path = self._get_audio_sample_path(index)
+#         label = self._get_audio_sample_label(index)
+#         signal, sr = torchaudio.load(audio_sample_path)
+#         signal = self._preprocess_signal(signal, sr)
+#         if self.device == "mps":
+#             signal = self.transformation(signal.to("cpu")).to(self.device)
+#         else:
+#             signal = self.transformation(signal)
+#         return signal, label
+
+#     def _preprocess_signal(self, signal: torch.Tensor, sr: int) -> torch.Tensor:
+
+#         signal = signal.to(self.device)
+#         signal = self._resample_if_necessary(signal, sr)
+#         signal = self._mix_down_if_necessary(signal)
+#         signal = self._cut_if_necessary(signal)
+#         signal = self._right_pad_if_necessary(signal)
+#         return signal
+
+#     def _resample_if_necessary(self, signal: torch.Tensor, sr: int) -> torch.Tensor:
+
+#         if sr != self.target_sample_rate:
+#             resampler = torchaudio.transforms.Resample(
+#                 orig_freq=sr, new_freq=self.target_sample_rate).to(self.device)
+#             signal = resampler(signal)
+#         return signal
+
+#     def _mix_down_if_necessary(self, signal: torch.Tensor) -> torch.Tensor:
+
+#         if (signal.shape[0] > 1):
+#             signal = torch.mean(signal, dim=0, keepdim=True)
+#         return signal
+
+#     def _cut_if_necessary(self, signal: torch.Tensor):
+
+#         if (signal.shape[1] > self.num_samples):
+#             signal = signal[:, :self.num_samples]
+#         return signal
+
+#     def _right_pad_if_necessary(self, signal: torch.Tensor) -> torch.Tensor:
+
+#         length_signal = signal.shape[1]
+#         if (length_signal < self.num_samples):
+#             num_missing_samples = self.num_samples - length_signal
+#             last_dim_padding = (0, num_missing_samples)
+#             signal = torch.nn.functional.pad(signal, last_dim_padding)
+#         return signal
+
+#     def _get_audio_sample_path(self, index: int) -> str:
+
+#         path = os.path.join(self.audio_dir, self.annotations.iloc[index, 1])
+#         return path
+
+#     def _get_audio_sample_label(self, index: int) -> int:
+
+#         return self.annotations.iloc[index, 2]-1
 
 class FSC22Dataset(Dataset):
 
-    def __init__(self, annotations_file: str, audio_dir: str, transformation: callable, target_sample_rate: int, num_samples: int, device: str | torch.device):
-
+    def __init__(self, annotations_file: str, audio_dir: str, target_sample_rate: int):
         self.annotations = pd.read_csv(annotations_file)
         self.audio_dir = audio_dir
-        self.device = device
-        if self.device == "mps":
-            self.transformation = transformation.to("cpu")
-        else:
-            self.transformation = transformation.to(self.device)
         self.target_sample_rate = target_sample_rate
-        self.num_samples = num_samples
         # Mapping from numeric labels to categorical labels
         self.class_mapping = self.annotations[['Class ID', 'Class Name']].drop_duplicates(
         ).set_index('Class ID')['Class Name'].to_dict()
@@ -42,63 +114,14 @@ class FSC22Dataset(Dataset):
         return len(self.annotations)
 
     def __getitem__(self, index: int) -> tuple[torch.Tensor, int]:
-
-        audio_sample_path = self._get_audio_sample_path(index)
+        preprocessed_path = os.path.join(self.audio_dir, f"{index}.wav")
+        signal, sr = torchaudio.load(preprocessed_path)
+        assert sr == self.target_sample_rate, f"Sample rate mismatch: {sr} != {self.target_sample_rate}"
         label = self._get_audio_sample_label(index)
-        signal, sr = torchaudio.load(audio_sample_path)
-        signal = self._preprocess_signal(signal, sr)
-        if self.device == "mps":
-            signal = self.transformation(signal.to("cpu")).to(self.device)
-        else:
-            signal = self.transformation(signal)
         return signal, label
 
-    def _preprocess_signal(self, signal: torch.Tensor, sr: int) -> torch.Tensor:
-
-        signal = signal.to(self.device)
-        signal = self._resample_if_necessary(signal, sr)
-        signal = self._mix_down_if_necessary(signal)
-        signal = self._cut_if_necessary(signal)
-        signal = self._right_pad_if_necessary(signal)
-        return signal
-
-    def _resample_if_necessary(self, signal: torch.Tensor, sr: int) -> torch.Tensor:
-
-        if sr != self.target_sample_rate:
-            resampler = torchaudio.transforms.Resample(
-                orig_freq=sr, new_freq=self.target_sample_rate).to(self.device)
-            signal = resampler(signal)
-        return signal
-
-    def _mix_down_if_necessary(self, signal: torch.Tensor) -> torch.Tensor:
-
-        if (signal.shape[0] > 1):
-            signal = torch.mean(signal, dim=0, keepdim=True)
-        return signal
-
-    def _cut_if_necessary(self, signal: torch.Tensor):
-
-        if (signal.shape[1] > self.num_samples):
-            signal = signal[:, :self.num_samples]
-        return signal
-
-    def _right_pad_if_necessary(self, signal: torch.Tensor) -> torch.Tensor:
-
-        length_signal = signal.shape[1]
-        if (length_signal < self.num_samples):
-            num_missing_samples = self.num_samples - length_signal
-            last_dim_padding = (0, num_missing_samples)
-            signal = torch.nn.functional.pad(signal, last_dim_padding)
-        return signal
-
-    def _get_audio_sample_path(self, index: int) -> str:
-
-        path = os.path.join(self.audio_dir, self.annotations.iloc[index, 1])
-        return path
-
     def _get_audio_sample_label(self, index: int) -> int:
-
-        return self.annotations.iloc[index, 2]-1
+        return self.annotations.iloc[index, 2] - 1
 
 
 # Functions to create DataLoader instances for training, validation, and testing.
@@ -139,7 +162,7 @@ if __name__ == "__main__":
     ANNOTATIONS_FILE = "../data/raw/metadata/metadata_FSC22.csv"
     AUDIO_DIR = "../data/raw/audio"
     SAMPLE_RATE = 22050
-    NUM_SAMPLES = 22050*5
+    # NUM_SAMPLES = 22050*5
 
     BATCH_SIZE = 16
     EPOCHS = 2
@@ -147,26 +170,26 @@ if __name__ == "__main__":
 
     if torch.cuda.is_available():
         device = "cuda"
-    # elif torch.backends.mps.is_available():
-    #     device = "mps"
+    elif torch.backends.mps.is_available():
+        device = "mps"
     else:
         device = "cpu"
     print(f"Using device {device}")
 
-    mel_spectrogram = torchaudio.transforms.MelSpectrogram(
-        sample_rate=SAMPLE_RATE,
-        n_fft=1024,
-        hop_length=512,
-        n_mels=128
-    )
+    # mel_spectrogram = torchaudio.transforms.MelSpectrogram(
+    #     sample_rate=SAMPLE_RATE,
+    #     n_fft=1024,
+    #     hop_length=512,
+    #     n_mels=128
+    # )
 
     fsc22 = FSC22Dataset(
         annotations_file=ANNOTATIONS_FILE,
         audio_dir=AUDIO_DIR,
-        transformation=mel_spectrogram,
+        # transformation=mel_spectrogram,
         target_sample_rate=SAMPLE_RATE,
-        num_samples=NUM_SAMPLES,
-        device=device
+        # num_samples=NUM_SAMPLES,
+        # device=device
     )
 
     print(fsc22[0][0].shape)
