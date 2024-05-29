@@ -1,7 +1,7 @@
 *.code-workspace
 /.env
 /venv
-
+/baseline_melspectograms/data/
 *.DS_Store
 /data
 /logs
