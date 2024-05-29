@@ -1,5 +1,5 @@
 import os
-
+import sys
 import torch
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader, SubsetRandomSampler
@@ -9,13 +9,20 @@ import torchaudio
 
 import numpy as np
 import pandas as pd
+import pickle
 
 from sklearn.model_selection import train_test_split
 
-# from main import *
-from train import *
-from test import *
+try:
+    # If running as a script, adjust the path
+    if __name__ == "main":
+        sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
+    from train import *
+    from test import *
+except ImportError:
+    from .train import *
+    from .test import *
 
 # class FSC22Dataset(Dataset):
 
@@ -100,10 +107,9 @@ from test import *
 
 class FSC22Dataset(Dataset):
 
-    def __init__(self, annotations_file: str, audio_dir: str, target_sample_rate: int):
+    def __init__(self, annotations_file: str, audio_dir: str):
         self.annotations = pd.read_csv(annotations_file)
         self.audio_dir = audio_dir
-        self.target_sample_rate = target_sample_rate
         # Mapping from numeric labels to categorical labels
         self.class_mapping = self.annotations[['Class ID', 'Class Name']].drop_duplicates(
         ).set_index('Class ID')['Class Name'].to_dict()
@@ -114,11 +120,12 @@ class FSC22Dataset(Dataset):
         return len(self.annotations)
 
     def __getitem__(self, index: int) -> tuple[torch.Tensor, int]:
-        preprocessed_path = os.path.join(self.audio_dir, f"{index}.wav")
-        signal, sr = torchaudio.load(preprocessed_path)
-        assert sr == self.target_sample_rate, f"Sample rate mismatch: {sr} != {self.target_sample_rate}"
+        preprocessed_path = os.path.join(self.audio_dir, f"{index}.pt")
+        # signal, sr = torchaudio.load(preprocessed_path)
+
+        spectogram = torch.load(preprocessed_path)
         label = self._get_audio_sample_label(index)
-        return signal, label
+        return spectogram, label
 
     def _get_audio_sample_label(self, index: int) -> int:
         return self.annotations.iloc[index, 2] - 1
@@ -160,7 +167,7 @@ def get_data_loaders(dataset: FSC22Dataset, train_size: float, val_size: float, 
 if __name__ == "__main__":
 
     ANNOTATIONS_FILE = "../data/raw/metadata/metadata_FSC22.csv"
-    AUDIO_DIR = "../data/raw/audio"
+    AUDIO_DIR = "../data/preprocessed/audio"
     SAMPLE_RATE = 22050
     # NUM_SAMPLES = 22050*5
 
@@ -187,7 +194,6 @@ if __name__ == "__main__":
         annotations_file=ANNOTATIONS_FILE,
         audio_dir=AUDIO_DIR,
         # transformation=mel_spectrogram,
-        target_sample_rate=SAMPLE_RATE,
         # num_samples=NUM_SAMPLES,
         # device=device
     )

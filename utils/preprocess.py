@@ -22,8 +22,14 @@ def preprocess_audio(audio_sample_path: str, target_sample_rate: int, num_sample
         n_mels=n_mels
     )
 
-    # Move to CPU to save (not supported on CUDA/MPS)
-    spectrogram = spectrogram_transform.to('cpu')
+    # Not suppoted on mps device
+    if device == 'mps':
+        spectrogram_transform = spectrogram_transform.to('cpu')
+        spectrogram = spectrogram_transform(signal.to('cpu'))
+        spectrogram = spectrogram.to(device)
+    else:
+        spectrogram_transform = spectrogram_transform.to(device)
+        spectrogram = spectrogram_transform(signal.to(device))
 
     return spectrogram
 
@@ -38,10 +44,10 @@ def preprocess_and_save_data(annotations_file: str, audio_dir: str, target_sampl
         spectrogram = preprocess_audio(
             audio_sample_path, target_sample_rate, num_samples, device)
 
-        # Save the spectrogram as a PKL file
-        output_path = os.path.join(output_dir, f"{index}.pkl")
-        with open(output_path, 'wb') as f:
-            pickle.dump(spectrogram, f)
+        # Save the spectrogram as a pt file
+        output_path = os.path.join(
+            output_dir, f"{annotations.iloc[index, 1].rstrip('.wav')}.pt")
+        torch.save(spectrogram, output_path)
 
 
 def resample_if_necessary(signal, sr, target_sample_rate, device):
@@ -73,16 +79,18 @@ def right_pad_if_necessary(signal, num_samples):
     return signal
 
 
-# Example usage
-# preprocess_and_save_data('annotations.csv', 'audio_files', 16000, 16000*5, 'cuda', 'output_dir')
-# preprocess and save data
-annotations_file = '../data/raw/metadata/metadata_FSC22.csv'
-audio_dir = '../data/raw/audio'
-target_sample_rate = 22050
-num_samples = 22050*5
-device = torch.device('cuda' if torch.cuda.is_available() else (
-    'mps' if torch.backends.mps.is_available() else 'cpu'))
-output_dir = '../data/preprocessed/audio'
+if __name__ == '__main__':
 
-preprocess_and_save_data(annotations_file, audio_dir,
-                         target_sample_rate, num_samples, device, output_dir)
+    # Example usage
+    # preprocess_and_save_data('annotations.csv', 'audio_files', 16000, 16000*5, 'cuda', 'output_dir')
+    # preprocess and save data
+    annotations_file = '../data/raw/metadata/metadata_FSC22.csv'
+    audio_dir = '../data/raw/audio'
+    target_sample_rate = 22050
+    num_samples = 22050*5
+    device = torch.device('cuda' if torch.cuda.is_available() else (
+        'mps' if torch.backends.mps.is_available() else 'cpu'))
+    output_dir = '../data/preprocessed/audio'
+
+    preprocess_and_save_data(annotations_file, audio_dir,
+                             target_sample_rate, num_samples, device, output_dir)
