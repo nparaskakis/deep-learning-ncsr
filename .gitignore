@@ -1,7 +1,7 @@
 *.code-workspace
 /.env
 /venv
-/test
+
 *.DS_Store
 /data
 /logs
