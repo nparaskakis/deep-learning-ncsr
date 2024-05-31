@@ -88,8 +88,14 @@ if __name__ == '__main__':
     audio_dir = '../data/raw/audio'
     target_sample_rate = 22050
     num_samples = 22050*5
-    device = torch.device('cuda' if torch.cuda.is_available() else (
-        'mps' if torch.backends.mps.is_available() else 'cpu'))
+
+    if torch.cuda.is_available():
+        device = 'cuda'
+    else:
+        device = 'cpu'
+
+    # device = torch.device('cuda' if torch.cuda.is_available() else (
+    #     'mps' if torch.backends.mps.is_available() else 'cpu'))
     output_dir = '../data/preprocessed/audio'
 
     preprocess_and_save_data(annotations_file, audio_dir,

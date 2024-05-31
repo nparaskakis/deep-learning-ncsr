@@ -64,7 +64,7 @@ def main(args):
         "HOP_LENGTH": 512,
         "N_MELS": 128,
 
-        "BATCH_SIZE": 16,
+        "BATCH_SIZE": 64,
         "EPOCHS": 10,
         "LEARNING_RATE": 1e-3,
 
