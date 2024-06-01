@@ -1,5 +1,8 @@
 *.code-workspace
 *.DS_Store
-/data
-baseline_melspectograms/__pycache__
-baseline_melspectograms/logs
+/.env
+/venv
+/baseline/data/
+/baseline/logs/
+__pycache__
+/baseline/tmp
