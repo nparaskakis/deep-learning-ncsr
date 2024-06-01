@@ -96,8 +96,8 @@ def get_audio_features(signal, target_sample_rate, n_fft, hop_length, device):
 
 if __name__ == '__main__':
     
-    ANNOTATIONS_FILE = '../data/raw/metadata/metadata_FSC22.csv'
-    AUDIO_DIR = '../data/raw/audio'
+    ANNOTATIONS_FILE = '../../data/raw/metadata/metadata_FSC22.csv'
+    AUDIO_DIR = '../../data/raw/audio'
     
     TARGET_SAMPLE_RATE = 22050
     NUM_SAMPLES = 22050*5
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     else:
         DEVICE = "cpu"
         
-    OUTPUT_DIR = '../data/preprocessed/audiofeatures'
+    OUTPUT_DIR = '../../data/preprocessed/audiofeatures'
     
     N_FFT = 2048
     HOP_LENGTH = 512
