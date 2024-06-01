@@ -117,7 +117,7 @@ if __name__ == '__main__':
         
     OUTPUT_DIR = '../../data/preprocessed/melspectrograms'
     
-    N_FFT = 1024
+    N_FFT = 2048
     HOP_LENGTH = 512
     N_MELS = 128
 
