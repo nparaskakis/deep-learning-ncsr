@@ -49,8 +49,8 @@ def main(args):
 
     # Configuration settings
     config = {
-        "ANNOTATIONS_FILE": "data/raw/metadata/metadata_FSC22.csv",
-        "AUDIO_DIR": f"data/preprocessed/{args.features}",
+        "ANNOTATIONS_FILE": "../data/raw/metadata/metadata_FSC22.csv",
+        "AUDIO_DIR": f"../data/preprocessed/{args.features}",
 
         "BATCH_SIZE": 128,
         "EPOCHS": 300,

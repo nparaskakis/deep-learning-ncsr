@@ -2,7 +2,7 @@
 *.DS_Store
 /.env
 /venv
-/baseline/data/
+/data
 /baseline/logs/
 __pycache__
 /baseline/tmp
