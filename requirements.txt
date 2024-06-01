@@ -11,3 +11,5 @@ torchmetrics
 sklearn
 torchviz
 torch-audiomentations
+soundfile
+
