@@ -68,14 +68,14 @@ def test(model, data_loader, loss_fn, device, subset_name, num_classes, timestam
 
     with open(f"logs/fsc22_{timestamp}/metadata/eval_on_{subset_name}_set.txt", 'w') as file:
         file.write(f'Evaluation on {subset_name} set:\n')
-        file.write(f'Test Loss: {avg_test_loss_per_batch}\n')
+        file.write(f'Loss: {avg_test_loss_per_batch}\n')
         file.write(f'Accuracy: {final_accuracy}\n')
         file.write(f'Precision: {final_precision}\n')
         file.write(f'Recall: {final_recall}\n')
         file.write(f'F1 Score: {final_f1_score}\n')
 
     print(f'\nEvaluation on {subset_name} set:\n')
-    print(f'Test Loss: {avg_test_loss_per_batch}')
+    print(f'Loss: {avg_test_loss_per_batch}')
     print(f'Accuracy: {final_accuracy}')
     print(f'Precision: {final_precision}')
     print(f'Recall: {final_recall}')
