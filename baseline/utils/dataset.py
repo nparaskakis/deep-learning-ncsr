@@ -27,19 +27,20 @@ except ImportError:
 
 class FSC22Dataset(Dataset):
 
-    def __init__(self, annotations_file: str, data_dir: str):
+    def __init__(self, annotations_file: str, data_dir: str, device):
         self.annotations = pd.read_csv(annotations_file)
         self.data_dir = data_dir
         self.class_mapping = self.annotations[['Class ID', 'Class Name']].drop_duplicates().set_index('Class ID')['Class Name'].to_dict()
         self.class_mapping = {k-1: self.class_mapping[k] for k in sorted(self.class_mapping)}
-
+        self.device = device
+        
     def __len__(self) -> int:
         return len(self.annotations)
 
     def __getitem__(self, index: int) -> tuple[torch.Tensor, int]:
         item_name = self.annotations.iloc[index, 1].strip(".wav") + ".pt"
         item_path = os.path.join(self.data_dir, item_name)
-        item = torch.load(item_path)
+        item = torch.load(item_path, map_location=self.device)
         label = self._get_audio_sample_label(index)
         return item, label
 

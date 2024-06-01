@@ -73,7 +73,7 @@ def main(args):
     
     print(f"Using device {config['DEVICE']}")
 
-    fsc22 = FSC22Dataset(annotations_file=config["ANNOTATIONS_FILE"], data_dir=config["AUDIO_DIR"])
+    fsc22 = FSC22Dataset(annotations_file=config["ANNOTATIONS_FILE"], data_dir=config["AUDIO_DIR"], device=config["DEVICE"])
     dim1 = fsc22[0][0].shape[1]
     dim2 = fsc22[0][0].shape[2]
     
