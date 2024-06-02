@@ -17,20 +17,23 @@ def write_config_to_file(config, file_path):
             f.write(f"{key}: {value}\n")
 
 
-def get_model(architecture, dim1, dim2):
+def get_model(architecture, dim1, dim2, num_classes):
     if architecture == 'CNN1':
-        from models import CNNNetwork1
-        return CNNNetwork1(dim1, dim2)
+        from models.cnn1 import CNNNetwork1
+        return CNNNetwork1(dim1, dim2, num_classes)
     elif architecture == 'CNN2':
-        from models import CNNNetwork2
-        return CNNNetwork2(dim1, dim2)
+        from models.cnn2 import CNNNetwork2
+        return CNNNetwork2(dim1, dim2, num_classes)
+    elif architecture == 'FCNN1':
+        from models.fcnn1 import FCNNNetwork1
+        return FCNNNetwork1(dim1, dim2, num_classes)
     else:
         raise ValueError(f"Unknown architecture: {architecture}")
 
 
 def main(args):
 
-    if (args.features != "melspectrograms") and (args.features != "audiofeatures"):
+    if (args.features != "melspectrograms") and (args.features != "audiofeatures") and (args.features != "beatsfeatures"):
         raise ValueError(f"Unknown features: {args.features}")
     
     
@@ -47,7 +50,6 @@ def main(args):
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-    # Configuration settings
     config = {
         "ANNOTATIONS_FILE": "../data/raw/metadata/metadata_FSC22.csv",
         "AUDIO_DIR": f"../data/preprocessed/{args.features}",
@@ -77,7 +79,7 @@ def main(args):
     dim1 = fsc22[0][0].shape[1]
     dim2 = fsc22[0][0].shape[2]
     
-    cnn = get_model(args.architecture, dim1, dim2).to(config["DEVICE"])
+    cnn = get_model(args.architecture, dim1, dim2, config["NUM_CLASSES"]).to(config["DEVICE"])
 
     loss_fn = nn.CrossEntropyLoss()
 

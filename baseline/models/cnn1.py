@@ -7,7 +7,7 @@ from torch.nn import Module
 
 class CNNNetwork1(Module):
 
-    def __init__(self, dim1, dim2):
+    def __init__(self, dim1, dim2, num_classes):
 
         super().__init__()
         
@@ -41,9 +41,7 @@ class CNNNetwork1(Module):
 
         # Flatten layer to convert matrix into a vector for the fully connected layer
         self.flatten = nn.Flatten()
-
-        # with torch.no_grad():
-        #     self.flattened_size = self.flatten(self.layer1(self.layer2(self.layer3(self.layer4(torch.zeros(1, 1, 128, 216)))))).shape[1]
+        
         with torch.no_grad():
             dummy_input = torch.zeros(1, 1, dim1, dim2)
             x = self.layer1(dummy_input)
@@ -61,7 +59,7 @@ class CNNNetwork1(Module):
             nn.Linear(in_features=4096, out_features=4096),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(in_features=4096, out_features=27)
+            nn.Linear(in_features=4096, out_features=num_classes)
         )
 
     def forward(self, input_data: torch.Tensor) -> torch.Tensor:

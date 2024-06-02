@@ -7,7 +7,7 @@ from torch.nn import Module
 
 class CNNNetwork2(Module):
 
-    def __init__(self):
+    def __init__(self, dim1, dim2, num_classes):
 
         super().__init__()
 
@@ -51,13 +51,17 @@ class CNNNetwork2(Module):
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
 
-        # Flatten layer to convert matrix into a vector for the fully connected layer
         self.flatten = nn.Flatten()
 
         with torch.no_grad():
-            self.flattened_size = self.flatten(self.layers8910(self.layers567(
-                self.layers34(self.layers12(torch.zeros(1, 1, 128, 216)))))).shape[1]
-
+            dummy_input = torch.zeros(1, 1, dim1, dim2)
+            x = self.layer12(dummy_input)
+            x = self.layer34(x)
+            x = self.layer567(x)
+            x = self.layer8910(x)
+            x = self.flatten(x)
+            self.flattened_size = x.shape[1]
+        
         self.classifier = nn.Sequential(
             # Adjust the size according to your mel-spectrogram dimensions after pooling
             nn.Linear(in_features=self.flattened_size, out_features=4096),
@@ -66,10 +70,8 @@ class CNNNetwork2(Module):
             nn.Linear(in_features=4096, out_features=4096),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(in_features=4096, out_features=27)
+            nn.Linear(in_features=4096, out_features=num_classes)
         )
-
-        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, input_data: torch.Tensor) -> torch.Tensor:
 
@@ -79,5 +81,5 @@ class CNNNetwork2(Module):
         x = self.layers8910(x)
         x = self.flatten(x)
         x = self.classifier(x)
-        # predictions = self.softmax(x)
+        
         return x
