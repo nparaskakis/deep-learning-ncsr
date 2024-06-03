@@ -19,13 +19,10 @@ class FCNNNetwork1(Module):
             self.flattened_size = x.shape[1]
 
         self.classifier = nn.Sequential(
-            nn.Linear(in_features=self.flattened_size, out_features=8192),
+            nn.Linear(in_features=self.flattened_size, out_features=512),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(in_features=8192, out_features=4096),
-            nn.ReLU(),
-            nn.Dropout(),
-            nn.Linear(in_features=4096, out_features=num_classes)
+            nn.Linear(in_features=512, out_features=num_classes)
         )
 
     def forward(self, input_data: torch.Tensor) -> torch.Tensor:

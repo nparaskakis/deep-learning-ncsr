@@ -38,8 +38,8 @@ def check_class_mapping(dataset):
 if __name__ == "__main__":
     
     
-    ANNOTATIONS_FILE = "../data/raw/metadata/metadata_FSC22.csv"
-    AUDIO_DIR = "../data/preprocessed/audio"
+    ANNOTATIONS_FILE = "../../data/raw/metadata/metadata_FSC22.csv"
+    AUDIO_DIR = "../../data/preprocessed/melspectrograms"
 
     BATCH_SIZE = 64
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         
     print(f"\nUsing device {device}")
 
-    fsc22 = FSC22Dataset(annotations_file=ANNOTATIONS_FILE, data_dir=AUDIO_DIR)
+    fsc22 = FSC22Dataset(annotations_file=ANNOTATIONS_FILE, data_dir=AUDIO_DIR, device=device)
     
     check_dataset_get_item(fsc22, 0)
     

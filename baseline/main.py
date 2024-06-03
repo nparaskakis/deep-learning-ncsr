@@ -31,11 +31,30 @@ def get_model(architecture, dim1, dim2, num_classes):
         raise ValueError(f"Unknown architecture: {architecture}")
 
 
-def main(args):
 
-    if (args.features != "melspectrograms") and (args.features != "audiofeatures") and (args.features != "beatsfeatures"):
+
+
+
+def validate_arguments(args):
+    
+    if (args.architecture != "CNN1") and \
+       (args.architecture != "CNN2") and \
+       (args.architecture != "FCNN1"):
+        raise ValueError(f"Unknown architecture: {args.architecture}")
+    
+    if (args.features != "melspectrograms") and \
+       (args.features != "audiofeatures") and \
+       (args.features != "beatsfeatures"):
         raise ValueError(f"Unknown features: {args.features}")
     
+    
+    
+    
+
+
+def main(args):
+
+    validate_arguments(args)
     
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
@@ -115,7 +134,7 @@ def main(args):
 
 if __name__ == "__main__":
     
-    parser = argparse.ArgumentParser(description='Audio classification with CNNs')
+    parser = argparse.ArgumentParser(description='Forest Sounds Classification')
     parser.add_argument('--architecture', type=str, required=True, help='CNN architecture to use')
     parser.add_argument('--features', type=str, required=True, help='Features to use (melspectrograms or audiofeatures)')
     args = parser.parse_args()

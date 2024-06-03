@@ -1,10 +1,11 @@
 import os
-import pickle
 import torch
 import torchaudio
 import pandas as pd
 import numpy as np
 import librosa
+
+
 
 def preprocess_audio_get_audio_features(signal, original_sample_rate: int, target_sample_rate: int, num_samples: int, device: str | torch.device, n_fft: int = 2048, hop_length: int = 512):
 
@@ -16,6 +17,8 @@ def preprocess_audio_get_audio_features(signal, original_sample_rate: int, targe
     melspectrogram = get_audio_features(signal, target_sample_rate, n_fft, hop_length, device)
 
     return melspectrogram
+
+
 
 
 def preprocess_and_save_data(annotations_file: str, audio_dir: str, target_sample_rate: int, num_samples: int, device: str | torch.device, output_dir: str, n_fft, hop_length):
@@ -31,6 +34,8 @@ def preprocess_and_save_data(annotations_file: str, audio_dir: str, target_sampl
         melspectrogram = preprocess_audio_get_audio_features(signal, original_sample_rate, target_sample_rate, num_samples, device, n_fft, hop_length)
         output_path = os.path.join(output_dir, f"{annotations.iloc[index, 1].rstrip('.wav')}.pt")
         torch.save(melspectrogram, output_path)
+
+
 
 
 def resample_if_necessary(signal, sr, target_sample_rate, device):
@@ -70,6 +75,7 @@ def right_pad_if_necessary(signal, num_samples):
     return signal
 
 
+
 def get_audio_features(signal, target_sample_rate, n_fft, hop_length, device):
     
     signal = signal.cpu().numpy()
@@ -92,6 +98,8 @@ def get_audio_features(signal, target_sample_rate, n_fft, hop_length, device):
     features_tensor = torch.tensor(features_tensor, dtype=torch.float32).to(device)
     
     return features_tensor
+
+
 
 
 if __name__ == '__main__':

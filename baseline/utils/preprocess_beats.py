@@ -1,11 +1,11 @@
 import os
-import pickle
 import torch
 import torchaudio
 import pandas as pd
-import numpy as np
-import librosa
 from beats.BEATs import BEATs, BEATsConfig
+
+
+
 
 def preprocess_audio_get_melspectograms(signal, original_sample_rate: int, target_sample_rate: int, num_samples: int, device: str | torch.device):
 
@@ -17,6 +17,8 @@ def preprocess_audio_get_melspectograms(signal, original_sample_rate: int, targe
     beats_features = get_beats_features(signal, device)
 
     return beats_features
+
+
 
 
 def preprocess_and_save_data(annotations_file: str, audio_dir: str, target_sample_rate: int, num_samples: int, device: str | torch.device, output_dir: str):
@@ -32,6 +34,9 @@ def preprocess_and_save_data(annotations_file: str, audio_dir: str, target_sampl
         melspectrogram = preprocess_audio_get_melspectograms(signal, original_sample_rate, target_sample_rate, num_samples, device)
         output_path = os.path.join(output_dir, f"{annotations.iloc[index, 1].rstrip('.wav')}.pt")
         torch.save(melspectrogram, output_path)
+
+
+
 
 
 def resample_if_necessary(signal, sr, target_sample_rate, device):
@@ -85,6 +90,9 @@ def get_beats_features(signal, device):
     beats_features = beats_features.to(device)
     
     return beats_features
+
+
+
 
 
 if __name__ == '__main__':

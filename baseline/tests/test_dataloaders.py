@@ -34,8 +34,8 @@ def check_dataloader(data_loader):
 if __name__ == "__main__":
     
     
-    ANNOTATIONS_FILE = "../data/raw/metadata/metadata_FSC22.csv"
-    AUDIO_DIR = "../data/preprocessed/audio"
+    ANNOTATIONS_FILE = "../../data/raw/metadata/metadata_FSC22.csv"
+    AUDIO_DIR = "../../data/preprocessed/melspectrograms"
 
     BATCH_SIZE = 64
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         
     print(f"\nUsing device {device}")
 
-    fsc22 = FSC22Dataset(annotations_file=ANNOTATIONS_FILE, data_dir=AUDIO_DIR)
+    fsc22 = FSC22Dataset(annotations_file=ANNOTATIONS_FILE, data_dir=AUDIO_DIR, device=device)
     
     train_loader, val_loader, test_loader = get_data_loaders(dataset=fsc22, train_size=0.7, val_size=0.15, test_size=0.15, batch_size=BATCH_SIZE)
     
