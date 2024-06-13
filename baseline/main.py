@@ -44,7 +44,8 @@ def validate_arguments(args):
     
     if (args.features != "melspectrograms") and \
        (args.features != "audiofeatures") and \
-       (args.features != "beatsfeatures"):
+       (args.features != "beatsfeatures") and \
+       (args.features != "augmented_melspectrograms"):
         raise ValueError(f"Unknown features: {args.features}")
     
     
@@ -70,11 +71,12 @@ def main(args):
             os.makedirs(directory)
 
     config = {
-        "ANNOTATIONS_FILE": "../data/raw/metadata/metadata_FSC22.csv",
+        # "ANNOTATIONS_FILE": "../data/raw/metadata/metadata_FSC22.csv",
+        "ANNOTATIONS_FILE": "../data/augmented/metadata/augmented_metadata_FSC22.csv",
         "AUDIO_DIR": f"../data/preprocessed/{args.features}",
 
         "BATCH_SIZE": 128,
-        "EPOCHS": 300,
+        "EPOCHS": 50,
         "LEARNING_RATE": 1e-5,
 
         "TRAIN_SIZE": 0.7,
