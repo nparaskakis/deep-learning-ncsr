@@ -21,12 +21,12 @@ def preprocess_audio_get_audio_features(signal, original_sample_rate: int, targe
 
 
 
-def preprocess_and_save_data(annotations_file: str, audio_dir: str, target_sample_rate: int, num_samples: int, device: str | torch.device, output_dir: str, n_fft, hop_length):
+def preprocess_and_save_data(annotations_dir: str, audio_dir: str, target_sample_rate: int, num_samples: int, device: str | torch.device, output_dir: str, n_fft, hop_length):
     
+    annotations_file = os.path.join(annotations_dir, "metadata.csv")
     annotations = pd.read_csv(annotations_file)
     
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
 
     for index in range(len(annotations)):
         audio_sample_path = os.path.join(audio_dir, annotations.iloc[index, 1])
@@ -104,8 +104,12 @@ def get_audio_features(signal, target_sample_rate, n_fft, hop_length, device):
 
 if __name__ == '__main__':
     
-    ANNOTATIONS_FILE = '../../data/raw/metadata/metadata_FSC22.csv'
-    AUDIO_DIR = '../../data/raw/audio'
+    audio_dir = "../../data/augmented_A/audio"
+    metadata_dir = "../../data/augmented_A/metadata"
+    output_dir = "../../data/preprocessed/augmented_A_audiofeatures"
+    
+    # ANNOTATIONS_FILE = '../../data/raw/metadata/metadata_FSC22.csv'
+    # AUDIO_DIR = '../../data/raw/audio'
     
     TARGET_SAMPLE_RATE = 22050
     NUM_SAMPLES = 22050*5
@@ -117,9 +121,9 @@ if __name__ == '__main__':
     else:
         DEVICE = "cpu"
         
-    OUTPUT_DIR = '../../data/preprocessed/audiofeatures'
+    # OUTPUT_DIR = '../../data/preprocessed/audiofeatures'
     
     N_FFT = 2048
     HOP_LENGTH = 512
 
-    preprocess_and_save_data(ANNOTATIONS_FILE, AUDIO_DIR, TARGET_SAMPLE_RATE, NUM_SAMPLES, DEVICE, OUTPUT_DIR, N_FFT, HOP_LENGTH)
+    preprocess_and_save_data(metadata_dir, audio_dir, TARGET_SAMPLE_RATE, NUM_SAMPLES, DEVICE, output_dir, N_FFT, HOP_LENGTH)

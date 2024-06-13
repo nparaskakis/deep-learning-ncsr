@@ -7,93 +7,108 @@ import librosa
 import soundfile as sf
 
 
-def augment_audio(original_audio, sr):
+def augment_audio(original_audio, sr, augment_type):
     
-    augment = Compose([
-        # AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=1),
-        # PitchShift(min_semitones=-4, max_semitones=4, p=1),
-        # HighPassFilter(min_cutoff_freq=1500, max_cutoff_freq=2500, p=1),
-        # TimeMask(min_band_part=0.1, max_band_part=0.5, p=1),
+    augment_type_A = Compose([
+        Shift(min_shift=-0.5, max_shift=0.5, rollover=False, p=1),
+    ])
+    
+    augment_type_B = Compose([
         Gain(min_gain_db=-12, max_gain_db=12, p=1),
         TimeStretch(min_rate=0.9, max_rate=1.2, p=1),
         Shift(min_shift=-0.5, max_shift=0.5, rollover=False, p=1),
-        # ClippingDistortion(min_percentile_threshold=0,
-        #    max_percentile_threshold=40, p=1),
-        # LowPassFilter(min_cutoff_freq=1500, max_cutoff_freq=8000, p=1),
-        # PolarityInversion(p=1)
     ])
     
-    augmented_audio = augment(original_audio, sample_rate=sr)
+    if augment_type == "type_A":
+        augmented_audio = augment_type_A(original_audio, sample_rate=sr)
+    elif augment_type == "type_B":
+        augmented_audio = augment_type_B(original_audio, sample_rate=sr)
+    else:
+        raise ValueError("Error in type of augmentation.")
     
     return augmented_audio
 
-# Function to augment a file and save it
-def augment_and_save(original_file, augmented_file):
+
+
+def augment_and_save(original_file, augmented_file, augment_type):
     
     original_audio, sr = librosa.load(original_file, sr=22050, mono=True)
     
-    augmented_audio = augment_audio(original_audio, sr=22050)
-
+    if augment_type == "type_A":
+        augmented_audio = augment_audio(original_audio, sr=22050, augment_type=augment_type)
+    elif augment_type == "type_B":
+        augmented_audio = augment_audio(original_audio, sr=22050, augment_type=augment_type)
+    else:
+        raise ValueError("Error in type of augmentation.")
+    
     sf.write(augmented_file, augmented_audio, samplerate=22050)
+        
     
     
 
-def process_files(audio_dir, metadata_file, augmented_dir, percentage):
+def process_files(audio_dir, metadata_dir, augmented_audio_dir, augmented_metadata_dir, percentage, augment_type):
     
-    # Read the metadata CSV file
+    type_str = augment_type.strip("type_")
+    
+    metadata_file = os.path.join(metadata_dir, "metadata.csv")
     metadata = pd.read_csv(metadata_file)
 
-    # Create the augmented directory if it does not exist
-    if not os.path.exists(augmented_dir):
-        os.makedirs(augmented_dir)
-
-    if not os.path.exists(augmented_dir+"/audio"):
-        os.makedirs(augmented_dir+"/audio")
+    os.makedirs(augmented_audio_dir, exist_ok=True)
+    os.makedirs(augmented_metadata_dir, exist_ok=True)
     
-    if not os.path.exists(augmented_dir+"metadata"):
-        os.makedirs(augmented_dir+"/metadata")
-    
-    # New metadata list
     new_metadata = []
 
-    # Process each class
     for class_id, group in metadata.groupby('Class ID'):
         
         files = group['Dataset File Name'].tolist()
         num_files_to_augment = int(len(files) * (percentage / 100.0))
         
-        # Randomly choose files to augment
         files_to_augment = random.sample(files, num_files_to_augment)
         
         for file in files:
             
-            # Copy the original file
-            original_file_path = os.path.join(audio_dir, file)  # Modify with actual path
-            new_original_file_path = os.path.join(augmented_dir, 'audio')
-            shutil.copy(original_file_path, new_original_file_path)
+            original_audio_file = os.path.join(audio_dir, file)
+            shutil.copy(original_audio_file, augmented_audio_dir)
             
-            # Update metadata for original file
             class_name = group[group['Dataset File Name'] == file]['Class Name'].values[0]
             new_metadata.append([file, file, class_id, class_name])
             
             if file in files_to_augment:
-                # Augment the file and save it
-                augmented_file = file.replace('.wav', '_augmented.wav')
-                augmented_file_path = os.path.join(augmented_dir, "audio", augmented_file)
-                augment_and_save(original_file_path, augmented_file_path)
                 
-                # Update metadata for augmented file
-                new_metadata.append([augmented_file, augmented_file, class_id, class_name])
+                if augment_type == "type_A":
+                    augmented_file = file.replace('.wav', '_augmented_A.wav')
+                    augmented_file_path = os.path.join(augmented_audio_dir, augmented_file)
+                    augment_and_save(original_audio_file, augmented_file_path, "type_A")
+                    new_metadata.append([augmented_file, augmented_file, class_id, class_name])
+                elif augment_type == "type_B":
+                    augmented_file = file.replace('.wav', '_augmented_B.wav')
+                    augmented_file_path = os.path.join(augmented_audio_dir, augmented_file)
+                    augment_and_save(original_audio_file, augmented_file_path, "type_B")
+                    new_metadata.append([augmented_file, augmented_file, class_id, class_name])
+                elif augment_type == "type_AB":
+                    augmented_file = file.replace('.wav', '_augmented_A.wav')
+                    augmented_file_path = os.path.join(augmented_audio_dir, augmented_file)
+                    augment_and_save(original_audio_file, augmented_file_path, "type_A")
+                    new_metadata.append([augmented_file, augmented_file, class_id, class_name])
+                    
+                    augmented_file = file.replace('.wav', '_augmented_B.wav')
+                    augmented_file_path = os.path.join(augmented_audio_dir, augmented_file)
+                    augment_and_save(original_audio_file, augmented_file_path, "type_B")
+                    new_metadata.append([augmented_file, augmented_file, class_id, class_name])
+                else:
+                    raise ValueError("Error in type of augmentation.")
 
-
-    # Write new metadata CSV
     new_metadata_df = pd.DataFrame(new_metadata, columns=['Source File Name', 'Dataset File Name', 'Class ID', 'Class Name'])
-    new_metadata_df.to_csv(os.path.join(augmented_dir, 'metadata', 'augmented_metadata_FSC22.csv'), index=False)
+    new_metadata_df.to_csv(os.path.join(augmented_metadata_dir, 'metadata.csv'), index=False)
 
-# Example usage
-audio_dir = "../../data/raw/audio"
-metadata_file = '../../data/raw/metadata/metadata_FSC22.csv'  # Replace with your actual path
-augmented_dir = '../../data/augmented'
+
+augment_type = "type_A" ## "type_B" ## "type_AB"
+tmp = augment_type.strip("type_")
 percentage = 100
+audio_dir = "../../data/raw/audio"
+metadata_dir = "../../data/raw/metadata"
+augmented_audio_dir = f"../../data/augmented_{tmp}/audio"
+augmented_metadata_dir = f"../../data/augmented_{tmp}/metadata"
 
-process_files(audio_dir, metadata_file, augmented_dir, percentage)
+
+process_files(audio_dir, metadata_dir, augmented_audio_dir, augmented_metadata_dir, percentage, augment_type)
