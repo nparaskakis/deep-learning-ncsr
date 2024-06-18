@@ -24,6 +24,15 @@ def get_model(architecture, dim1, dim2, num_classes):
     elif architecture == 'CNN2':
         from models.cnn2 import CNNNetwork2
         return CNNNetwork2(dim1, dim2, num_classes)
+    elif architecture == 'CNN3':
+        from models.cnn3 import CNNNetwork3
+        return CNNNetwork3(dim1, dim2, num_classes)
+    elif architecture == 'CNN4':
+        from models.cnn4 import CNNNetwork4
+        return CNNNetwork4(dim1, dim2, num_classes)
+    elif architecture == 'CNN5':
+        from models.cnn5 import CNNNetwork5
+        return CNNNetwork5(dim1, dim2, num_classes)
     elif architecture == 'FCNN1':
         from models.fcnn1 import FCNNNetwork1
         return FCNNNetwork1(dim1, dim2, num_classes)
@@ -39,6 +48,9 @@ def validate_arguments(args):
     
     if (args.architecture != "CNN1") and \
        (args.architecture != "CNN2") and \
+       (args.architecture != "CNN3") and \
+       (args.architecture != "CNN4") and \
+       (args.architecture != "CNN5") and \
        (args.architecture != "FCNN1"):
         raise ValueError(f"Unknown architecture: {args.architecture}")
     
