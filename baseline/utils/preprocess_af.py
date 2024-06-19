@@ -89,7 +89,7 @@ def get_audio_features(signal, target_sample_rate, n_fft, hop_length, device):
     spectral_flatness = librosa.feature.spectral_flatness(y=signal, n_fft=n_fft, hop_length=hop_length, power=2.0)
     spectral_rolloff = librosa.feature.spectral_rolloff(y=signal, sr=target_sample_rate, n_fft=n_fft, hop_length=hop_length, roll_percent=0.85)
     zero_crossing_rate = librosa.feature.zero_crossing_rate(y=signal, frame_length=n_fft, hop_length=hop_length)
-
+    
     # Concatenate features row-wise
     features_tensor = np.concatenate((mfccs, chroma_stft, tonnetz, spectral_contrast, 
                                 spectral_centroids, spectral_bandwidth, spectral_flatness, 
@@ -104,9 +104,9 @@ def get_audio_features(signal, target_sample_rate, n_fft, hop_length, device):
 
 if __name__ == '__main__':
     
-    audio_dir = "../../data/augmented_A/audio"
-    metadata_dir = "../../data/augmented_A/metadata"
-    output_dir = "../../data/preprocessed/augmented_A_audiofeatures"
+    audio_dir = "../../data/augmented_B/audio"
+    metadata_dir = "../../data/augmented_B/metadata"
+    output_dir = "../../data/preprocessed/augmented_B_audiofeatures"
     
     # ANNOTATIONS_FILE = '../../data/raw/metadata/metadata_FSC22.csv'
     # AUDIO_DIR = '../../data/raw/audio'
