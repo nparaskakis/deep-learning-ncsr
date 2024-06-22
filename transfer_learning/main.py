@@ -112,7 +112,7 @@ def main(args):
     config_file_path = f'logs/fsd50k_{timestamp}/metadata/configurations.txt'
     write_config_to_file(config, config_file_path)
     
-    fsd50k = FSD50KDataset(annotations_file=config["ANNOTATIONS_FILE"], vocabulary_file=config["ANNOTATIONS_FILE"], data_dir=config["AUDIO_DIR"], device=config["DEVICE"], model_str="mobilenet")
+    fsd50k = FSD50KDataset(annotations_file=config["ANNOTATIONS_FILE"], vocabulary_file=config["ANNOTATIONS_FILE"], data_dir=config["AUDIO_DIR"], device=config["DEVICE"], model_str="CNN")
     dim1 = fsd50k[0][0].shape[1]
     dim2 = fsd50k[0][0].shape[2]
     
@@ -133,11 +133,11 @@ def main(args):
         batch_size=config["BATCH_SIZE"]
     )
 
-    x = torch.randn(1, 1, dim1, dim2).to(config["DEVICE"])
-    x = x.repeat(1, 3, 1, 1)
-    out = cnn(x)
-    dot = make_dot(out, params=dict(list(cnn.named_parameters()) + [('input', x)]))
-    dot.render('cnn_architecture', format='png', directory=f'logs/fsd50k_{timestamp}/metadata')
+    # x = torch.randn(1, 1, dim1, dim2).to(config["DEVICE"])
+    # x = x.repeat(1, 3, 1, 1)
+    # out = cnn(x)
+    # dot = make_dot(out, params=dict(list(cnn.named_parameters()) + [('input', x)]))
+    # dot.render('cnn_architecture', format='png', directory=f'logs/fsd50k_{timestamp}/metadata')
 
     model = train(cnn, train_data_loader, val_data_loader, loss_fn, optimizer, scheduler, config["DEVICE"], config["EPOCHS"], config["NUM_CLASSES"], timestamp, early_stopping_patience=config["EARLY_STOPPING_PATIENCE"], min_delta=config["MIN_DELTA"])
     

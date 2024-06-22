@@ -52,12 +52,13 @@ class FSD50KDataset(Dataset):
             # tr = transforms.Resize((224, 224)).to("cpu")
             # item = tr(item.to("cpu")).to(self.device)
             item = item.repeat(3, 1, 1)
-            
+        
         classes = self.annotations.iloc[index, 2].split(",")
         classes_int = list(map(int, classes))
         
         # Convert to one-hot encoding
         labels = self.to_one_hot(classes_int).to(self.device)
+        
         return item, labels
     
     def to_one_hot(self, class_numbers: list[int]) -> torch.Tensor:
