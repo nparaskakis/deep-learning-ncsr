@@ -36,6 +36,10 @@ def get_model(architecture, dim1, dim2, num_classes):
     elif architecture == 'FCNN1':
         from models.fcnn1 import FCNNNetwork1
         return FCNNNetwork1(dim1, dim2, num_classes)
+    elif architecture == 'MobileNetV3Small':
+        mobilenet_v3_small = models.mobilenet_v3_small(weights=None)
+        mobilenet_v3_small.classifier[3] = torch.nn.Linear(mobilenet_v3_small.classifier[3].in_features, num_classes)
+        return mobilenet_v3_small
     else:
         raise ValueError(f"Unknown architecture: {architecture}")
 
@@ -51,18 +55,12 @@ def validate_arguments(args):
        (args.architecture != "CNN3") and \
        (args.architecture != "CNN4") and \
        (args.architecture != "CNN5") and \
-       (args.architecture != "FCNN1"):
+       (args.architecture != "FCNN1") and \
+       (args.architecture != "MobileNetV3Small"):
         raise ValueError(f"Unknown architecture: {args.architecture}")
     
     if (args.features != "melspectrograms") and \
-       (args.features != "audiofeatures") and \
-       (args.features != "beatsfeatures") and \
-       (args.features != "augmented_A_melspectrograms") and \
-       (args.features != "augmented_B_melspectrograms") and \
-       (args.features != "augmented_AB_melspectrograms") and \
-       (args.features != "augmented_A_audiofeatures") and \
-       (args.features != "augmented_B_audiofeatures") and \
-       (args.features != "augmented_AB_audiofeatures"): 
+       (args.features != "audiofeatures"):
         raise ValueError(f"Unknown features: {args.features}")
     
     
@@ -93,7 +91,7 @@ def main(args):
         "AUDIO_DIR": f"../fsd50k_data/preprocessed/{args.features}",
 
         "BATCH_SIZE": 128,
-        "EPOCHS": 100,
+        "EPOCHS": int(args.epochs) if args.epochs else 100,
         "LEARNING_RATE": 1e-5,
 
         "MIN_DELTA": 0.001,
@@ -104,26 +102,29 @@ def main(args):
         
         "NUM_CLASSES": 200,
 
-        "DEVICE": "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+        "DEVICE": "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu",
+        
+        "CONTLEARN": args.contlearn
     }
     
     print(f"Using device {config['DEVICE']}")
 
-    fsd50k = FSD50KDataset(annotations_file=config["ANNOTATIONS_FILE"], vocabulary_file=config["ANNOTATIONS_FILE"], data_dir=config["AUDIO_DIR"], device=config["DEVICE"])
+    config_file_path = f'logs/fsd50k_{timestamp}/metadata/configurations.txt'
+    write_config_to_file(config, config_file_path)
+    
+    fsd50k = FSD50KDataset(annotations_file=config["ANNOTATIONS_FILE"], vocabulary_file=config["ANNOTATIONS_FILE"], data_dir=config["AUDIO_DIR"], device=config["DEVICE"], model_str="mobilenet")
     dim1 = fsd50k[0][0].shape[1]
     dim2 = fsd50k[0][0].shape[2]
     
+    cnn = get_model(args.architecture, dim1, dim2, config["NUM_CLASSES"]).to(config["DEVICE"])
     
-    # cnn = get_model(args.architecture, dim1, dim2, config["NUM_CLASSES"]).to(config["DEVICE"])
-    mobilenet_v3_small = models.mobilenet_v3_small(weights=None).to(config["DEVICE"])
+    if args.contlearn != None:
+        cnn.load_state_dict(torch.load(args.contlearn))
+        print("Trained model loaded.")
     
-    # Modify the last classification layer to match the number of classes in your dataset
-    mobilenet_v3_small.classifier[3] = torch.nn.Linear(mobilenet_v3_small.classifier[3].in_features, config["NUM_CLASSES"]).to(config["DEVICE"])
-
-
     loss_fn = nn.BCEWithLogitsLoss()
 
-    optimizer = torch.optim.Adam(params=mobilenet_v3_small.parameters(), lr=config["LEARNING_RATE"])
+    optimizer = torch.optim.Adam(params=cnn.parameters(), lr=config["LEARNING_RATE"])
 
     scheduler = ReduceLROnPlateau(optimizer, 'min', patience=config["SCHEDULER_PATIENCE"], factor=0.1, min_lr=config["MIN_LR"])
 
@@ -134,21 +135,17 @@ def main(args):
 
     x = torch.randn(1, 1, dim1, dim2).to(config["DEVICE"])
     x = x.repeat(1, 3, 1, 1)
-    out = mobilenet_v3_small(x)
-    dot = make_dot(out, params=dict(list(mobilenet_v3_small.named_parameters()) + [('input', x)]))
+    out = cnn(x)
+    dot = make_dot(out, params=dict(list(cnn.named_parameters()) + [('input', x)]))
     dot.render('cnn_architecture', format='png', directory=f'logs/fsd50k_{timestamp}/metadata')
 
-    model = train(mobilenet_v3_small, train_data_loader, val_data_loader, loss_fn, optimizer, scheduler, config["DEVICE"], config["EPOCHS"], config["NUM_CLASSES"], timestamp, early_stopping_patience=config["EARLY_STOPPING_PATIENCE"], min_delta=config["MIN_DELTA"])
-
+    model = train(cnn, train_data_loader, val_data_loader, loss_fn, optimizer, scheduler, config["DEVICE"], config["EPOCHS"], config["NUM_CLASSES"], timestamp, early_stopping_patience=config["EARLY_STOPPING_PATIENCE"], min_delta=config["MIN_DELTA"])
+    
     test(model, train_data_loader, loss_fn, config["DEVICE"], "train", config["NUM_CLASSES"], timestamp)
     test(model, val_data_loader, loss_fn, config["DEVICE"], "val", config["NUM_CLASSES"], timestamp)
     test(model, test_data_loader, loss_fn, config["DEVICE"], "test", config["NUM_CLASSES"], timestamp) 
 
-    config_file_path = f'logs/fsd50k_{timestamp}/metadata/configurations.txt'
-    write_config_to_file(config, config_file_path)
-
-    # saved_model = CNNNetwork()
-    # saved_model.load_state_dict(torch.load(f'logs/fsd50k_{timestamp}/best_model/best_model.pth'))
+    
 
 
 if __name__ == "__main__":
@@ -156,6 +153,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Forest Sounds Classification')
     parser.add_argument('--architecture', type=str, required=True, help='CNN architecture to use')
     parser.add_argument('--features', type=str, required=True, help='Features to use (melspectrograms or audiofeatures)')
+    parser.add_argument('--contlearn', type=str, help='Continue learning of a trained model')
+    parser.add_argument('--epochs', type=str, help='Epochs to run')
     args = parser.parse_args()
     
     main(args)

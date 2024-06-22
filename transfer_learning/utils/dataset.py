@@ -28,7 +28,7 @@ except ImportError:
 
 
 class FSD50KDataset(Dataset):
-    def __init__(self, annotations_file: str, vocabulary_file: str, data_dir: str, device):
+    def __init__(self, annotations_file: str, vocabulary_file: str, data_dir: str, device, model_str):
         
         self.annotations = pd.read_csv(annotations_file)
         self.vocabulary = pd.read_csv(vocabulary_file, header=None, names=['Class Number', 'Class Name', 'Mid'])
@@ -38,6 +38,8 @@ class FSD50KDataset(Dataset):
         # Create a mapping from Class Number to Class Name
         self.class_mapping = self.vocabulary.set_index('Class Number')['Class Name'].to_dict()
 
+        self.model_str = model_str
+        
     def __len__(self) -> int:
         return len(self.annotations)
 
@@ -45,10 +47,12 @@ class FSD50KDataset(Dataset):
         item_name = f"{self.annotations.iloc[index, 0]}.pt"
         item_path = os.path.join(self.data_dir, item_name)
         item = torch.load(item_path, map_location=self.device)
-        tr = transforms.Resize((224, 224)).to("cpu")
-        item = tr(item.to("cpu")).to(self.device)
-        print(item.shape)
-        item = item.repeat(3, 1, 1)
+        
+        if self.model_str == "mobilenet":
+            # tr = transforms.Resize((224, 224)).to("cpu")
+            # item = tr(item.to("cpu")).to(self.device)
+            item = item.repeat(3, 1, 1)
+            
         classes = self.annotations.iloc[index, 2].split(",")
         classes_int = list(map(int, classes))
         

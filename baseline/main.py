@@ -88,12 +88,11 @@ def main(args):
             os.makedirs(directory)
 
     config = {
-        # "ANNOTATIONS_FILE": "../data/raw/metadata/metadata.csv",
-        "ANNOTATIONS_FILE": "../data/augmented/metadata/metadata.csv",
-        "AUDIO_DIR": f"../data/preprocessed/{args.features}",
+        "ANNOTATIONS_FILE": f"../fsc22_data/{args.features.rsplit('_', 1)[0]}/metadata/metadata.csv" if '_' in args.features else "../fsc22_data/raw/metadata/metadata.csv",
+        "AUDIO_DIR": f"../fsc22_data/preprocessed/{args.features}",
 
         "BATCH_SIZE": 128,
-        "EPOCHS": 50,
+        "EPOCHS": int(args.epochs) if args.epochs else 100,
         "LEARNING_RATE": 1e-5,
 
         "TRAIN_SIZE": 0.7,
@@ -108,17 +107,26 @@ def main(args):
         
         "NUM_CLASSES": 27,
 
-        "DEVICE": "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+        "DEVICE": "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu",
+        
+         "CONTLEARN": args.contlearn
     }
     
     print(f"Using device {config['DEVICE']}")
 
+    config_file_path = f'logs/fsc22_{timestamp}/metadata/configurations.txt'
+    write_config_to_file(config, config_file_path)
+    
     fsc22 = FSC22Dataset(annotations_file=config["ANNOTATIONS_FILE"], data_dir=config["AUDIO_DIR"], device=config["DEVICE"])
     dim1 = fsc22[0][0].shape[1]
     dim2 = fsc22[0][0].shape[2]
     
     cnn = get_model(args.architecture, dim1, dim2, config["NUM_CLASSES"]).to(config["DEVICE"])
 
+    if args.contlearn != None:
+        cnn.load_state_dict(torch.load(args.contlearn))
+        print("Trained model loaded.")
+    
     loss_fn = nn.CrossEntropyLoss()
 
     optimizer = torch.optim.Adam(params=cnn.parameters(), lr=config["LEARNING_RATE"])
@@ -144,18 +152,14 @@ def main(args):
     test(model, val_data_loader, loss_fn, config["DEVICE"], "val", config["NUM_CLASSES"], timestamp)
     test(model, test_data_loader, loss_fn, config["DEVICE"], "test", config["NUM_CLASSES"], timestamp) 
 
-    config_file_path = f'logs/fsc22_{timestamp}/metadata/configurations.txt'
-    write_config_to_file(config, config_file_path)
-
-    # saved_model = CNNNetwork()
-    # saved_model.load_state_dict(torch.load(f'logs/fsc22_{timestamp}/best_model/best_model.pth'))
-
 
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description='Forest Sounds Classification')
     parser.add_argument('--architecture', type=str, required=True, help='CNN architecture to use')
     parser.add_argument('--features', type=str, required=True, help='Features to use (melspectrograms or audiofeatures)')
+    parser.add_argument('--contlearn', type=str, help='Continue learning of a trained model')
+    parser.add_argument('--epochs', type=str, help='Epochs to run')
     args = parser.parse_args()
     
     main(args)
