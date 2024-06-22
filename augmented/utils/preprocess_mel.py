@@ -117,9 +117,9 @@ def get_melspectrogram(signal, target_sample_rate, n_fft, hop_length, n_mels, de
 
 if __name__ == '__main__':
     
-    audio_dir = "../../fsc22_data/augmented_A/audio"
-    metadata_dir = "../../fsc22_data/augmented_A/metadata"
-    output_dir = "../../fsc22_data/preprocessed/augmented_A_melspectrograms"
+    audio_dir = "../../fsc22_data/augmented_AB_100/audio"
+    metadata_dir = "../../fsc22_data/augmented_AB_100/metadata"
+    output_dir = "../../fsc22_data/preprocessed/augmented_AB_100_melspectrograms"
     
     # ANNOTATIONS_FILE = '../../fsc22_data/raw/metadata/metadata.csv'
     # AUDIO_DIR = '../../fsc22_data/raw/audio'

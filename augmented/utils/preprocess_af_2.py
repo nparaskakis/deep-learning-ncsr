@@ -104,9 +104,9 @@ def get_audio_features(signal, target_sample_rate, n_fft, hop_length, device):
 
 if __name__ == '__main__':
     
-    audio_dir = "../../fsc22_data/augmented_AB/audio"
-    metadata_dir = "../../fsc22_data/augmented_AB/metadata"
-    output_dir = "../../fsc22_data/preprocessed/augmented_AB_audiofeatures"
+    audio_dir = "../../fsc22_data/augmented_B_50/audio"
+    metadata_dir = "../../fsc22_data/augmented_B_50/metadata"
+    output_dir = "../../fsc22_data/preprocessed/augmented_B_50_audiofeatures"
     
     # ANNOTATIONS_FILE = '../../fsc22_data/raw/metadata/metadata.csv'
     # AUDIO_DIR = '../../fsc22_data/raw/audio'
@@ -120,7 +120,7 @@ if __name__ == '__main__':
         DEVICE = "mps"
     else:
         DEVICE = "cpu"
-        
+    
     # OUTPUT_DIR = '../../data/preprocessed/audiofeatures'
     
     N_FFT = 2048

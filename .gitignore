@@ -5,9 +5,8 @@
 /fsc22_data
 /fsd50k_data
 /pretrained_models
-/baseline/data/
 /baseline/logs/
+/augmented/logs/
 /transfer_learning/logs
 __pycache__
 /baseline/tmp
-/baseline/utils/beats/BEATs_iter3_plus_AS2M.pt

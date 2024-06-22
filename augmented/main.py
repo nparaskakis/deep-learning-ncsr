@@ -54,9 +54,18 @@ def validate_arguments(args):
        (args.architecture != "FCNN1"):
         raise ValueError(f"Unknown architecture: {args.architecture}")
     
-    if (args.features != "melspectrograms") and \
-       (args.features != "audiofeatures") and \
-       (args.features != "beatsfeatures"):
+    if (args.features != "augmented_A_50_melspectrograms") and \
+       (args.features != "augmented_B_50_melspectrograms") and \
+       (args.features != "augmented_AB_50_melspectrograms") and \
+       (args.features != "augmented_A_50_audiofeatures") and \
+       (args.features != "augmented_B_50_audiofeatures") and \
+       (args.features != "augmented_AB_50_audiofeatures") and \
+       (args.features != "augmented_A_100_melspectrograms") and \
+       (args.features != "augmented_B_100_melspectrograms") and \
+       (args.features != "augmented_AB_100_melspectrograms") and \
+       (args.features != "augmented_A_100_audiofeatures") and \
+       (args.features != "augmented_B_100_audiofeatures") and \
+       (args.features != "augmented_AB_100_audiofeatures"): 
         raise ValueError(f"Unknown features: {args.features}")
     
     
@@ -129,9 +138,6 @@ def main(args):
 
     train_data_loader, val_data_loader, test_data_loader = get_data_loaders(
         dataset=fsc22,
-        train_size=config["TRAIN_SIZE"],
-        val_size=config["VAL_SIZE"],
-        test_size=config["TEST_SIZE"],
         batch_size=config["BATCH_SIZE"]
     )
 

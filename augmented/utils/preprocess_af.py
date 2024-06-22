@@ -104,9 +104,9 @@ def get_audio_features(signal, target_sample_rate, n_fft, hop_length, device):
 
 if __name__ == '__main__':
     
-    audio_dir = "../../fsc22_data/augmented_AB/audio"
-    metadata_dir = "../../fsc22_data/augmented_AB/metadata"
-    output_dir = "../../fsc22_data/preprocessed/augmented_AB_audiofeatures"
+    audio_dir = "../../fsc22_data/augmented_A_50/audio"
+    metadata_dir = "../../fsc22_data/augmented_A_50/metadata"
+    output_dir = "../../fsc22_data/preprocessed/augmented_A_50_audiofeatures"
     
     # ANNOTATIONS_FILE = '../../fsc22_data/raw/metadata/metadata.csv'
     # AUDIO_DIR = '../../fsc22_data/raw/audio'
