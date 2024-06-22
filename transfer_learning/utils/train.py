@@ -67,7 +67,8 @@ def train(model: torch.nn.Module, train_data_loader: DataLoader, val_data_loader
 
     writer = SummaryWriter(f'logs/fsd50k_{timestamp}/training_losses')
 
-    best_val_loss = np.inf
+    # best_val_loss = np.inf
+    best_neg_f1_score = np.inf
     best_model = model
     
     early_stopping_counter = 0
@@ -106,7 +107,7 @@ def train(model: torch.nn.Module, train_data_loader: DataLoader, val_data_loader
 
             lrs_before_step = [group['lr'] for group in optimizer.param_groups]
 
-            scheduler.step(avg_val_loss_per_batch)
+            scheduler.step(-val_f1_score)
 
             lrs_after_step = [group['lr'] for group in optimizer.param_groups]
 
@@ -114,13 +115,20 @@ def train(model: torch.nn.Module, train_data_loader: DataLoader, val_data_loader
                 if lr_after < lr_before:
                     print(f"Learning rate decreased from {lr_before} to {lr_after}")
                     print(f"Learning rate decreased from {lr_before} to {lr_after}", file=log_file)
-
-            if (best_val_loss - avg_val_loss_per_batch > min_delta):
-                best_val_loss = avg_val_loss_per_batch
+            
+            if (best_neg_f1_score - (-val_f1_score) > min_delta):
+                best_neg_f1_score = -val_f1_score
                 early_stopping_counter = 0
                 best_model = model
             else:
                 early_stopping_counter += 1
+                
+            # if (best_val_loss - avg_val_loss_per_batch > min_delta):
+            #     best_val_loss = avg_val_loss_per_batch
+            #     early_stopping_counter = 0
+            #     best_model = model
+            # else:
+            #     early_stopping_counter += 1
 
             if early_stopping_counter >= early_stopping_patience:
                 print("Early stopping triggered.")

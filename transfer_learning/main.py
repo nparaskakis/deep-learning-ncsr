@@ -6,7 +6,7 @@ from utils.train import *
 from utils.test import *
 import torch.nn as nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-
+import torchvision.models as models
 
 from torchviz import make_dot
 
@@ -93,7 +93,7 @@ def main(args):
         "AUDIO_DIR": f"../fsd50k_data/preprocessed/{args.features}",
 
         "BATCH_SIZE": 128,
-        "EPOCHS": 5,
+        "EPOCHS": 100,
         "LEARNING_RATE": 1e-5,
 
         "MIN_DELTA": 0.001,
@@ -113,11 +113,17 @@ def main(args):
     dim1 = fsd50k[0][0].shape[1]
     dim2 = fsd50k[0][0].shape[2]
     
-    cnn = get_model(args.architecture, dim1, dim2, config["NUM_CLASSES"]).to(config["DEVICE"])
+    
+    # cnn = get_model(args.architecture, dim1, dim2, config["NUM_CLASSES"]).to(config["DEVICE"])
+    mobilenet_v3_small = models.mobilenet_v3_small(weights=None).to(config["DEVICE"])
+    
+    # Modify the last classification layer to match the number of classes in your dataset
+    mobilenet_v3_small.classifier[3] = torch.nn.Linear(mobilenet_v3_small.classifier[3].in_features, config["NUM_CLASSES"]).to(config["DEVICE"])
+
 
     loss_fn = nn.BCEWithLogitsLoss()
 
-    optimizer = torch.optim.Adam(params=cnn.parameters(), lr=config["LEARNING_RATE"])
+    optimizer = torch.optim.Adam(params=mobilenet_v3_small.parameters(), lr=config["LEARNING_RATE"])
 
     scheduler = ReduceLROnPlateau(optimizer, 'min', patience=config["SCHEDULER_PATIENCE"], factor=0.1, min_lr=config["MIN_LR"])
 
@@ -127,11 +133,12 @@ def main(args):
     )
 
     x = torch.randn(1, 1, dim1, dim2).to(config["DEVICE"])
-    out = cnn(x)
-    dot = make_dot(out, params=dict(list(cnn.named_parameters()) + [('input', x)]))
+    x = x.repeat(1, 3, 1, 1)
+    out = mobilenet_v3_small(x)
+    dot = make_dot(out, params=dict(list(mobilenet_v3_small.named_parameters()) + [('input', x)]))
     dot.render('cnn_architecture', format='png', directory=f'logs/fsd50k_{timestamp}/metadata')
 
-    model = train(cnn, train_data_loader, val_data_loader, loss_fn, optimizer, scheduler, config["DEVICE"], config["EPOCHS"], config["NUM_CLASSES"], timestamp, early_stopping_patience=config["EARLY_STOPPING_PATIENCE"], min_delta=config["MIN_DELTA"])
+    model = train(mobilenet_v3_small, train_data_loader, val_data_loader, loss_fn, optimizer, scheduler, config["DEVICE"], config["EPOCHS"], config["NUM_CLASSES"], timestamp, early_stopping_patience=config["EARLY_STOPPING_PATIENCE"], min_delta=config["MIN_DELTA"])
 
     test(model, train_data_loader, loss_fn, config["DEVICE"], "train", config["NUM_CLASSES"], timestamp)
     test(model, val_data_loader, loss_fn, config["DEVICE"], "val", config["NUM_CLASSES"], timestamp)

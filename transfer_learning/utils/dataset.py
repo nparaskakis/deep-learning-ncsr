@@ -6,6 +6,8 @@ from torch.utils.data import DataLoader, SubsetRandomSampler
 from torch.utils.data import DataLoader
 import pandas as pd
 
+from torchvision import transforms
+
 from sklearn.model_selection import train_test_split
 
 try:
@@ -43,7 +45,10 @@ class FSD50KDataset(Dataset):
         item_name = f"{self.annotations.iloc[index, 0]}.pt"
         item_path = os.path.join(self.data_dir, item_name)
         item = torch.load(item_path, map_location=self.device)
-        
+        tr = transforms.Resize((224, 224)).to("cpu")
+        item = tr(item.to("cpu")).to(self.device)
+        print(item.shape)
+        item = item.repeat(3, 1, 1)
         classes = self.annotations.iloc[index, 2].split(",")
         classes_int = list(map(int, classes))
         
