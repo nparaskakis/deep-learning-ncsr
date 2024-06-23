@@ -31,8 +31,17 @@ def get_model(architecture, dim1, dim2, num_classes):
     elif architecture == 'CNN4':
         from models.cnn4 import CNNNetwork4
         cnn4 = CNNNetwork4(dim1, dim2, num_classes)
-        cnn4.load_state_dict(torch.load('../pretrained_models/cnn4_pre_trained_fsd50k.pth', map_location=torch.device('cpu')))
-        cnn4.classifier[-1] = nn.Linear(cnn4.classifier[-1].in_features, num_classes)
+        # Load pre-trained model weights, excluding the final layer
+        pretrained_dict = torch.load('../pretrained_models/cnn4_pre_trained_fsd50k.pth', map_location=torch.device('cpu'))
+        model_dict = cnn4.state_dict()
+        # Filter out unnecessary keys
+        pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict and 'classifier.8' not in k}
+        # Update the model's state_dict
+        model_dict.update(pretrained_dict)
+        cnn4.load_state_dict(model_dict)
+        # Replace the final layer with a new one
+        num_ftrs = cnn4.classifier[8].in_features
+        cnn4.classifier[8] = nn.Linear(num_ftrs, num_classes)
         return cnn4
     elif architecture == 'CNN5':
         from models.cnn5 import CNNNetwork5
@@ -174,19 +183,14 @@ def main(args):
         for param in cnn.parameters():
             param.requires_grad = False
         
-        for param in cnn.avgpool.parameters():
+        for param in cnn.layer3.parameters():
             param.requires_grad = True
         
-        for param in cnn.fc.parameters():
+        for param in cnn.layer4.parameters():
             param.requires_grad = True
-    
-    elif args.architecture == "RESNET50":
-        
-        for param in cnn.parameters():
-            param.requires_grad = False
-        
+            
         for param in cnn.avgpool.parameters():
-            param.requires_grad = False
+            param.requires_grad = True
         
         for param in cnn.fc.parameters():
             param.requires_grad = True
