@@ -187,7 +187,8 @@ def main(args):
     
     loss_fn = nn.BCEWithLogitsLoss()
 
-    optimizer = torch.optim.Adam(params=cnn.parameters(), lr=config["LEARNING_RATE"])
+    # optimizer = torch.optim.Adam(params=cnn.parameters(), lr=config["LEARNING_RATE"])
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, cnn.parameters()), lr=config["LEARNING_RATE"])
 
     scheduler = ReduceLROnPlateau(optimizer, 'min', patience=config["SCHEDULER_PATIENCE"], factor=0.1, min_lr=config["MIN_LR"])
 
