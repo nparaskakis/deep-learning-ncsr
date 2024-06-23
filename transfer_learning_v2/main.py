@@ -30,7 +30,10 @@ def get_model(architecture, dim1, dim2, num_classes):
         return CNNNetwork3(dim1, dim2, num_classes)
     elif architecture == 'CNN4':
         from models.cnn4 import CNNNetwork4
-        return CNNNetwork4(dim1, dim2, num_classes)
+        cnn4 = CNNNetwork4(dim1, dim2, num_classes)
+        cnn4.load_state_dict(torch.load('../pretrained_models/cnn4_pre_trained_fsd50k.pth'))
+        cnn4.classifier[-1] = nn.Linear(cnn4.classifier[-1].in_features, num_classes)
+        return cnn4
     elif architecture == 'CNN5':
         from models.cnn5 import CNNNetwork5
         return CNNNetwork5(dim1, dim2, num_classes)
@@ -186,6 +189,17 @@ def main(args):
             param.requires_grad = False
         
         for param in cnn.fc.parameters():
+            param.requires_grad = True
+            
+    elif args.architecture == "CNN4":
+        
+        for param in cnn.parameters():
+            param.requires_grad = False
+        
+        # for param in cnn.layer4.parameters():
+        #     param.requires_grad = True
+        
+        for param in cnn.classifier.parameters():
             param.requires_grad = True
     
     
