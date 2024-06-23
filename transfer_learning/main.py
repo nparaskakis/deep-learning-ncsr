@@ -49,6 +49,25 @@ def get_model(architecture, dim1, dim2, num_classes):
         efficientnet_b2.features[0][0] = new_conv1
         efficientnet_b2.classifier[1] = torch.nn.Linear(efficientnet_b2.classifier[1].in_features, num_classes)
         return efficientnet_b2
+    elif architecture == 'VGG16':
+        vgg16 = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
+        original_weights = vgg16.features[0].weight.data
+        new_conv1 = nn.Conv2d(1, vgg16.features[0].out_channels, kernel_size=3, stride=1, padding=1)
+        new_conv1.weight.data = original_weights.mean(dim=1, keepdim=True)
+        vgg16.features[0] = new_conv1
+        vgg16.classifier[6] = nn.Linear(vgg16.classifier[6].in_features, num_classes)
+        return vgg16
+    elif architecture == 'RESNET18':
+        resnet18 = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+        
+        original_weights = resnet18.conv1.weight.data
+        new_conv1 = nn.Conv2d(1, resnet18.conv1.out_channels, kernel_size=7, stride=2, padding=3, bias=False)
+        new_conv1.weight.data = original_weights.mean(dim=1, keepdim=True)
+        resnet18.conv1 = new_conv1
+        
+        resnet18.fc = nn.Linear(resnet18.fc.in_features, num_classes)
+        
+        return resnet18
     else:
         raise ValueError(f"Unknown architecture: {architecture}")
 
@@ -66,7 +85,9 @@ def validate_arguments(args):
        (args.architecture != "CNN5") and \
        (args.architecture != "FCNN1") and \
        (args.architecture != "MobileNetV3Small") and \
-       (args.architecture != "EfficientNetB2"):
+       (args.architecture != "EfficientNetB2") and \
+       (args.architecture != "VGG16") and \
+       (args.architecture != "RESNET18"):
         raise ValueError(f"Unknown architecture: {args.architecture}")
     
     if (args.features != "melspectrograms") and \
@@ -114,7 +135,8 @@ def main(args):
 
         "DEVICE": "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu",
         
-        "CONTLEARN": args.contlearn
+        "CONTLEARN": args.contlearn,
+        "MODEL_STR": args.architecture
     }
     
     print(f"Using device {config['DEVICE']}")
@@ -127,6 +149,37 @@ def main(args):
     dim2 = fsd50k[0][0].shape[2]
     
     cnn = get_model(args.architecture, dim1, dim2, config["NUM_CLASSES"]).to(config["DEVICE"])
+    
+    if args.architecture == "VGG16":
+        
+        for param in cnn.parameters():
+            param.requires_grad = False
+        
+        for param in cnn.features[16:].parameters():
+            param.requires_grad = True
+        
+        for param in cnn.avgpool.parameters():
+            param.requires_grad = True
+            
+        for param in cnn.classifier[0:].parameters():
+            param.requires_grad = True
+            
+    elif args.architecture == "RESNET18":
+        
+        for param in cnn.parameters():
+            param.requires_grad = False
+        
+        for param in cnn.layer3.parameters():
+            param.requires_grad = True
+        
+        for param in cnn.layer4.parameters():
+            param.requires_grad = True
+            
+        for param in cnn.avgpool.parameters():
+            param.requires_grad = True
+        
+        for param in cnn.fc.parameters():
+            param.requires_grad = True
     
     if args.contlearn != None:
         cnn.load_state_dict(torch.load(args.contlearn))
