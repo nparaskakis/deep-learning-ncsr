@@ -42,6 +42,11 @@ def get_model(architecture, dim1, dim2, num_classes):
         return mobilenet_v3_small
     elif architecture == 'EfficientNetB2':
         efficientnet_b2 = models.efficientnet_b2(weights=models.EfficientNet_B2_Weights.DEFAULT)
+        original_conv1 = efficientnet_b2.features[0][0]
+        new_conv1 = nn.Conv2d(1, original_conv1.out_channels, kernel_size=original_conv1.kernel_size,
+                            stride=original_conv1.stride, padding=original_conv1.padding, bias=False)
+        new_conv1.weight.data = original_conv1.weight.data.mean(dim=1, keepdim=True)
+        efficientnet_b2.features[0][0] = new_conv1
         efficientnet_b2.classifier[1] = torch.nn.Linear(efficientnet_b2.classifier[1].in_features, num_classes)
         return efficientnet_b2
     else:

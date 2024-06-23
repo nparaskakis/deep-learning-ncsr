@@ -49,9 +49,11 @@ class FSD50KDataset(Dataset):
         item = torch.load(item_path, map_location=self.device)
         
         if self.model_str == "mobilenet" or self.model_str == "EfficientNetB2":
+            # print("beforeee ", item.shape)
+            item = torch.nn.functional.interpolate(item.unsqueeze(0), size=(260, 260)).squeeze(0)
             # tr = transforms.Resize((224, 224)).to("cpu")
             # item = tr(item.to("cpu")).to(self.device)
-            item = item.repeat(3, 1, 1)
+            # item = item.repeat(3, 1, 1)
         
         classes = self.annotations.iloc[index, 2].split(",")
         classes_int = list(map(int, classes))
