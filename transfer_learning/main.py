@@ -40,6 +40,10 @@ def get_model(architecture, dim1, dim2, num_classes):
         mobilenet_v3_small = models.mobilenet_v3_small(weights=None)
         mobilenet_v3_small.classifier[3] = torch.nn.Linear(mobilenet_v3_small.classifier[3].in_features, num_classes)
         return mobilenet_v3_small
+    elif architecture == 'EfficientNetB2':
+        efficientnet_b2 = models.efficientnet_b2(weights=models.EfficientNet_B2_Weights.DEFAULT)
+        efficientnet_b2.classifier[1] = torch.nn.Linear(efficientnet_b2.classifier[1].in_features, num_classes)
+        return efficientnet_b2
     else:
         raise ValueError(f"Unknown architecture: {architecture}")
 
@@ -56,7 +60,8 @@ def validate_arguments(args):
        (args.architecture != "CNN4") and \
        (args.architecture != "CNN5") and \
        (args.architecture != "FCNN1") and \
-       (args.architecture != "MobileNetV3Small"):
+       (args.architecture != "MobileNetV3Small") and \
+       (args.architecture != "EfficientNetB2"):
         raise ValueError(f"Unknown architecture: {args.architecture}")
     
     if (args.features != "melspectrograms") and \
@@ -112,7 +117,7 @@ def main(args):
     config_file_path = f'logs/fsd50k_{timestamp}/metadata/configurations.txt'
     write_config_to_file(config, config_file_path)
     
-    fsd50k = FSD50KDataset(annotations_file=config["ANNOTATIONS_FILE"], vocabulary_file=config["ANNOTATIONS_FILE"], data_dir=config["AUDIO_DIR"], device=config["DEVICE"], model_str="CNN")
+    fsd50k = FSD50KDataset(annotations_file=config["ANNOTATIONS_FILE"], vocabulary_file=config["ANNOTATIONS_FILE"], data_dir=config["AUDIO_DIR"], device=config["DEVICE"], model_str="EfficientNetB2")
     dim1 = fsd50k[0][0].shape[1]
     dim2 = fsd50k[0][0].shape[2]
     

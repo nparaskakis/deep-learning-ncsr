@@ -48,7 +48,7 @@ class FSD50KDataset(Dataset):
         item_path = os.path.join(self.data_dir, item_name)
         item = torch.load(item_path, map_location=self.device)
         
-        if self.model_str == "mobilenet":
+        if self.model_str == "mobilenet" or self.model_str == "EfficientNetB2":
             # tr = transforms.Resize((224, 224)).to("cpu")
             # item = tr(item.to("cpu")).to(self.device)
             item = item.repeat(3, 1, 1)
