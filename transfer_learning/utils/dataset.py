@@ -55,6 +55,10 @@ class FSD50KDataset(Dataset):
             # item = tr(item.to("cpu")).to(self.device)
             # item = item.repeat(3, 1, 1)
         
+        if self.model_str == "VGG16" or self.model_str == "RESNET18":
+            tr = transforms.Resize((224, 224)).to("cpu")
+            item = tr(item.to("cpu")).to(self.device)
+        
         classes = self.annotations.iloc[index, 2].split(",")
         classes_int = list(map(int, classes))
         
