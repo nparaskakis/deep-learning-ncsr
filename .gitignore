@@ -8,5 +8,6 @@
 /baseline/logs/
 /augmented/logs/
 /transfer_learning/logs
+/transfer_learning_v2/logs
 __pycache__
 /baseline/tmp
