@@ -8,9 +8,6 @@ import torch.nn as nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import torchvision.models as models
 
-from torchviz import make_dot
-
-
 def write_config_to_file(config, file_path):
     with open(file_path, 'w') as f:
         for key, value in config.items():
@@ -36,19 +33,6 @@ def get_model(architecture, dim1, dim2, num_classes):
     elif architecture == 'FCNN1':
         from models.fcnn1 import FCNNNetwork1
         return FCNNNetwork1(dim1, dim2, num_classes)
-    elif architecture == 'MobileNetV3Small':
-        mobilenet_v3_small = models.mobilenet_v3_small(weights=None)
-        mobilenet_v3_small.classifier[3] = torch.nn.Linear(mobilenet_v3_small.classifier[3].in_features, num_classes)
-        return mobilenet_v3_small
-    elif architecture == 'EfficientNetB2':
-        efficientnet_b2 = models.efficientnet_b2(weights=models.EfficientNet_B2_Weights.DEFAULT)
-        original_conv1 = efficientnet_b2.features[0][0]
-        new_conv1 = nn.Conv2d(1, original_conv1.out_channels, kernel_size=original_conv1.kernel_size,
-                            stride=original_conv1.stride, padding=original_conv1.padding, bias=False)
-        new_conv1.weight.data = original_conv1.weight.data.mean(dim=1, keepdim=True)
-        efficientnet_b2.features[0][0] = new_conv1
-        efficientnet_b2.classifier[1] = torch.nn.Linear(efficientnet_b2.classifier[1].in_features, num_classes)
-        return efficientnet_b2
     elif architecture == 'VGG16':
         vgg16 = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
         original_weights = vgg16.features[0].weight.data
@@ -84,8 +68,6 @@ def validate_arguments(args):
        (args.architecture != "CNN4") and \
        (args.architecture != "CNN5") and \
        (args.architecture != "FCNN1") and \
-       (args.architecture != "MobileNetV3Small") and \
-       (args.architecture != "EfficientNetB2") and \
        (args.architecture != "VGG16") and \
        (args.architecture != "RESNET18"):
         raise ValueError(f"Unknown architecture: {args.architecture}")
@@ -121,7 +103,7 @@ def main(args):
         "VOCABULARY_FILE": "../fsd50k_data/raw/metadata/vocabulary.csv",
         "AUDIO_DIR": f"../fsd50k_data/preprocessed/{args.features}",
 
-        "BATCH_SIZE": 128,
+        "BATCH_SIZE": 32,
         "EPOCHS": int(args.epochs) if args.epochs else 100,
         "LEARNING_RATE": 1e-5,
 
@@ -169,9 +151,6 @@ def main(args):
         for param in cnn.parameters():
             param.requires_grad = False
         
-        for param in cnn.layer3.parameters():
-            param.requires_grad = True
-        
         for param in cnn.layer4.parameters():
             param.requires_grad = True
             
@@ -187,7 +166,6 @@ def main(args):
     
     loss_fn = nn.BCEWithLogitsLoss()
 
-    # optimizer = torch.optim.Adam(params=cnn.parameters(), lr=config["LEARNING_RATE"])
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, cnn.parameters()), lr=config["LEARNING_RATE"])
 
     scheduler = ReduceLROnPlateau(optimizer, 'min', patience=config["SCHEDULER_PATIENCE"], factor=0.1, min_lr=config["MIN_LR"])
@@ -196,13 +174,7 @@ def main(args):
         dataset=fsd50k,
         batch_size=config["BATCH_SIZE"]
     )
-
-    # x = torch.randn(1, 1, dim1, dim2).to(config["DEVICE"])
-    # x = x.repeat(1, 3, 1, 1)
-    # out = cnn(x)
-    # dot = make_dot(out, params=dict(list(cnn.named_parameters()) + [('input', x)]))
-    # dot.render('cnn_architecture', format='png', directory=f'logs/fsd50k_{timestamp}/metadata')
-
+    
     model = train(cnn, train_data_loader, val_data_loader, loss_fn, optimizer, scheduler, config["DEVICE"], config["EPOCHS"], config["NUM_CLASSES"], timestamp, early_stopping_patience=config["EARLY_STOPPING_PATIENCE"], min_delta=config["MIN_DELTA"])
     
     test(model, train_data_loader, loss_fn, config["DEVICE"], "train", config["NUM_CLASSES"], timestamp)

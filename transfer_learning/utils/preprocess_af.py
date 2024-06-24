@@ -104,16 +104,9 @@ def get_audio_features(signal, target_sample_rate, n_fft, hop_length, device):
 
 if __name__ == '__main__':
     
-    audio_dir = "../../fsd50k_data/raw/audio/train"
-    metadata_dir = "../../fsd50k_data/raw/metadata/train"
-    output_dir = "../../fsd50k_data/preprocessed/audiofeatures/train"
-    
-    # audio_dir = "../../data/augmented_B/audio"
-    # metadata_dir = "../../data/augmented_B/metadata"
-    # output_dir = "../../data/preprocessed/augmented_B_audiofeatures"
-    
-    # ANNOTATIONS_FILE = '../../data/raw/metadata/metadata_FSC22.csv'
-    # AUDIO_DIR = '../../data/raw/audio'
+    audio_dir = "../../fsd50k_data/raw/audio"
+    metadata_dir = "../../fsd50k_data/raw/metadata"
+    output_dir = "../../fsd50k_data/preprocessed/audiofeatures"
     
     TARGET_SAMPLE_RATE = 22050
     NUM_SAMPLES = 22050*5
@@ -125,8 +118,6 @@ if __name__ == '__main__':
     else:
         DEVICE = "cpu"
         
-    # OUTPUT_DIR = '../../data/preprocessed/audiofeatures'
-    
     N_FFT = 2048
     HOP_LENGTH = 512
 

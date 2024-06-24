@@ -7,10 +7,6 @@ from utils.test import *
 import torch.nn as nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-
-from torchviz import make_dot
-
-
 def write_config_to_file(config, file_path):
     with open(file_path, 'w') as f:
         for key, value in config.items():
@@ -112,7 +108,8 @@ def main(args):
 
         "DEVICE": "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu",
         
-         "CONTLEARN": args.contlearn
+        "CONTLEARN": args.contlearn,
+        "MODEL_STR": args.architecture
     }
     
     print(f"Using device {config['DEVICE']}")
@@ -140,12 +137,7 @@ def main(args):
         dataset=fsc22,
         batch_size=config["BATCH_SIZE"]
     )
-
-    # x = torch.randn(1, 1, dim1, dim2).to(config["DEVICE"])
-    # out = cnn(x)
-    # dot = make_dot(out, params=dict(list(cnn.named_parameters()) + [('input', x)]))
-    # dot.render('cnn_architecture', format='png', directory=f'logs/fsc22_{timestamp}/metadata')
-
+    
     model = train(cnn, train_data_loader, val_data_loader, loss_fn, optimizer, scheduler, config["DEVICE"], config["EPOCHS"], 27, timestamp, early_stopping_patience=config["EARLY_STOPPING_PATIENCE"], min_delta=config["MIN_DELTA"])
 
     test(model, train_data_loader, loss_fn, config["DEVICE"], "train", config["NUM_CLASSES"], timestamp)

@@ -122,7 +122,7 @@ def process_files(audio_dir, metadata_dir, augmented_audio_dir, augmented_metada
 
 augment_type = "type_A" ## "type_B" ## "type_AB"
 tmp = augment_type.strip("type_")
-percentage = 50
+percentage = 100
 audio_dir = "../../fsc22_data/raw/audio"
 metadata_dir = "../../fsc22_data/raw/metadata"
 augmented_audio_dir = f"../../fsc22_data/augmented_{tmp}_{percentage}/audio"

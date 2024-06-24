@@ -44,7 +44,7 @@ class FSC22Dataset(Dataset):
         item_path = os.path.join(self.data_dir, item_name)
         item = torch.load(item_path, map_location=self.device)
         
-        if self.model_str == "VGG16" or self.model_str == "RESNET18" or self.model_str == "RESNET50":
+        if self.model_str == "VGG16" or self.model_str == "RESNET18":
             tr = transforms.Resize((224, 224)).to("cpu")
             item = tr(item.to("cpu")).to(self.device)
         

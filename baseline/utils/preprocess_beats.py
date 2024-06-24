@@ -7,7 +7,7 @@ from beats.BEATs import BEATs, BEATsConfig
 
 
 
-def preprocess_audio_get_melspectograms(signal, original_sample_rate: int, target_sample_rate: int, num_samples: int, device: str | torch.device):
+def preprocess_audio_get_beatsfeatures(signal, original_sample_rate: int, target_sample_rate: int, num_samples: int, device: str | torch.device):
 
     signal = signal.to(device)
     signal = resample_if_necessary(signal, original_sample_rate, target_sample_rate, device)
@@ -31,7 +31,7 @@ def preprocess_and_save_data(annotations_dir: str, audio_dir: str, target_sample
     for index in range(len(annotations)):
         audio_sample_path = os.path.join(audio_dir, annotations.iloc[index, 1])
         signal, original_sample_rate = torchaudio.load(audio_sample_path)
-        melspectrogram = preprocess_audio_get_melspectograms(signal, original_sample_rate, target_sample_rate, num_samples, device)
+        melspectrogram = preprocess_audio_get_beatsfeatures(signal, original_sample_rate, target_sample_rate, num_samples, device)
         output_path = os.path.join(output_dir, f"{annotations.iloc[index, 1].rstrip('.wav')}.pt")
         torch.save(melspectrogram, output_path)
 
@@ -97,12 +97,9 @@ def get_beats_features(signal, device):
 
 if __name__ == '__main__':
     
-    audio_dir = "../../data/raw/audio"
-    metadata_dir = "../../data/raw/metadata"
-    output_dir = "../../data/preprocessed/beatsfeatures"
-    
-    # ANNOTATIONS_FILE = '../../data/raw/metadata/metadata_FSC22.csv'
-    # AUDIO_DIR = '../../data/raw/audio'
+    audio_dir = "../../fsc22_data/raw/audio"
+    metadata_dir = "../../fsc22_data/raw/metadata"
+    output_dir = "../../fsc22_data/preprocessed/beatsfeatures"
     
     TARGET_SAMPLE_RATE = 22050
     NUM_SAMPLES = 22050*5
@@ -113,7 +110,5 @@ if __name__ == '__main__':
         DEVICE = "mps"
     else:
         DEVICE = "cpu"
-        
-    # OUTPUT_DIR = '../../data/preprocessed/beatsfeatures'
-
+    
     preprocess_and_save_data(metadata_dir, audio_dir, TARGET_SAMPLE_RATE, NUM_SAMPLES, DEVICE, output_dir)

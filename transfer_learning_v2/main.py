@@ -8,10 +8,6 @@ import torch.nn as nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import torchvision.models as models
 
-
-from torchviz import make_dot
-
-
 def write_config_to_file(config, file_path):
     with open(file_path, 'w') as f:
         for key, value in config.items():
@@ -31,15 +27,11 @@ def get_model(architecture, dim1, dim2, num_classes):
     elif architecture == 'CNN4':
         from models.cnn4 import CNNNetwork4
         cnn4 = CNNNetwork4(dim1, dim2, num_classes)
-        # Load pre-trained model weights, excluding the final layer
         pretrained_dict = torch.load('../pretrained_models/cnn4_pre_trained_fsd50k.pth', map_location=torch.device('cpu'))
         model_dict = cnn4.state_dict()
-        # Filter out unnecessary keys
         pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict and 'classifier.8' not in k}
-        # Update the model's state_dict
         model_dict.update(pretrained_dict)
         cnn4.load_state_dict(model_dict)
-        # Replace the final layer with a new one
         num_ftrs = cnn4.classifier[8].in_features
         cnn4.classifier[8] = nn.Linear(num_ftrs, num_classes)
         return cnn4
@@ -166,25 +158,22 @@ def main(args):
 
     if args.architecture == "VGG16":
         
-        # for param in cnn.features.parameters():
-        #     param.requires_grad = False
-        
-        # for param in cnn.avgpool.parameters():
-        #     param.requires_grad = False
-        
         for param in cnn.parameters():
             param.requires_grad = False
         
-        for param in cnn.classifier[3:].parameters():
+        for param in cnn.features[16:].parameters():
+            param.requires_grad = True
+        
+        for param in cnn.avgpool.parameters():
+            param.requires_grad = True
+            
+        for param in cnn.classifier[0:].parameters():
             param.requires_grad = True
             
     elif args.architecture == "RESNET18":
         
         for param in cnn.parameters():
             param.requires_grad = False
-        
-        for param in cnn.layer3.parameters():
-            param.requires_grad = True
         
         for param in cnn.layer4.parameters():
             param.requires_grad = True
@@ -214,7 +203,6 @@ def main(args):
     
     loss_fn = nn.CrossEntropyLoss()
 
-    # optimizer = torch.optim.Adam(params=cnn.parameters(), lr=config["LEARNING_RATE"])
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, cnn.parameters()), lr=config["LEARNING_RATE"])
 
     scheduler = ReduceLROnPlateau(optimizer, 'min', patience=config["SCHEDULER_PATIENCE"], factor=0.1, min_lr=config["MIN_LR"])
@@ -226,11 +214,6 @@ def main(args):
         test_size=config["TEST_SIZE"],
         batch_size=config["BATCH_SIZE"]
     )
-
-    # x = torch.randn(1, 1, dim1, dim2).to(config["DEVICE"])
-    # out = cnn(x)
-    # dot = make_dot(out, params=dict(list(cnn.named_parameters()) + [('input', x)]))
-    # dot.render('cnn_architecture', format='png', directory=f'logs/fsc22_{timestamp}/metadata')
 
     model = train(cnn, train_data_loader, val_data_loader, loss_fn, optimizer, scheduler, config["DEVICE"], config["EPOCHS"], 27, timestamp, early_stopping_patience=config["EARLY_STOPPING_PATIENCE"], min_delta=config["MIN_DELTA"])
 

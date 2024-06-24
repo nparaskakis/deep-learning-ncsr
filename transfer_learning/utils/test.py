@@ -65,19 +65,22 @@ def test(model, data_loader, loss_fn, device, subset_name, num_classes, timestam
     
     for i in range(num_classes):
         cm_df = pd.DataFrame(mcm[i], index=[f'Class {i} Negative', f'Class {i} Positive'], columns=[f'Class {i} Negative', f'Class {i} Positive'])
-        cm_df.to_csv(f"logs/fsd50k_{timestamp}/metadata/{subset_name}_confusion_matrix_class_{i}.csv", index=True)
+        if timestamp != None:
+            cm_df.to_csv(f"logs/fsd50k_{timestamp}/metadata/{subset_name}_confusion_matrix_class_{i}.csv", index=True)
+        plt.figure(figsize=(10, 10))
         disp = ConfusionMatrixDisplay(confusion_matrix=mcm[i], display_labels=[f'Class {i} Negative', f'Class {i} Positive'])
-        disp.plot(cmap=plt.cm.Blues)
-        plt.title(f'Confusion Matrix for Class {i}')
+        disp.plot(cmap=plt.cm.Blues, ax=plt.gca())
+        plt.title(f'Confusion Matrix for Class {i} on {subset_name} set')
         plt.show()
 
-    with open(f"logs/fsd50k_{timestamp}/metadata/eval_on_{subset_name}_set.txt", 'w') as file:
-        file.write(f'Evaluation on {subset_name} set:\n')
-        file.write(f'Loss: {avg_test_loss_per_batch}\n')
-        file.write(f'Accuracy: {final_accuracy}\n')
-        file.write(f'Precision: {final_precision}\n')
-        file.write(f'Recall: {final_recall}\n')
-        file.write(f'F1 Score: {final_f1_score}\n')
+    if timestamp != None:
+        with open(f"logs/fsd50k_{timestamp}/metadata/eval_on_{subset_name}_set.txt", 'w') as file:
+            file.write(f'Evaluation on {subset_name} set:\n')
+            file.write(f'Loss: {avg_test_loss_per_batch}\n')
+            file.write(f'Accuracy: {final_accuracy}\n')
+            file.write(f'Precision: {final_precision}\n')
+            file.write(f'Recall: {final_recall}\n')
+            file.write(f'F1 Score: {final_f1_score}\n')
 
     print(f'\nEvaluation on {subset_name} set:\n')
     print(f'Loss: {avg_test_loss_per_batch}')

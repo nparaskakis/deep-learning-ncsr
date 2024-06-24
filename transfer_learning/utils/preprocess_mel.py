@@ -117,14 +117,9 @@ def get_melspectrogram(signal, target_sample_rate, n_fft, hop_length, n_mels, de
 
 if __name__ == '__main__':
     
-    audio_dir = "../../fsd50k_data/raw/audio/test"
-    metadata_dir = "../../fsd50k_data/raw/metadata/test"
-    output_dir = "../../fsd50k_data/preprocessed/melspectrograms/test"
-    
-    # ANNOTATIONS_FILE = '../../data/raw/metadata/metadata.csv'
-    # AUDIO_DIR = '../../data/raw/audio'
-    
-    # OUTPUT_DIR = '../../data/preprocessed/melspectrograms'
+    audio_dir = "../../fsd50k_data/raw/audio"
+    metadata_dir = "../../fsd50k_data/raw/metadata"
+    output_dir = "../../fsd50k_data/preprocessed/melspectrograms"
     
     TARGET_SAMPLE_RATE = 22050
     NUM_SAMPLES = 22050*5

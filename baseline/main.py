@@ -8,9 +8,6 @@ import torch.nn as nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
-from torchviz import make_dot
-
-
 def write_config_to_file(config, file_path):
     with open(file_path, 'w') as f:
         for key, value in config.items():
@@ -82,7 +79,7 @@ def main(args):
             os.makedirs(directory)
 
     config = {
-        "ANNOTATIONS_FILE": f"../fsc22_data/{args.features.rsplit('_', 1)[0]}/metadata/metadata.csv" if '_' in args.features else "../fsc22_data/raw/metadata/metadata.csv",
+        "ANNOTATIONS_FILE": "../fsc22_data/raw/metadata/metadata.csv",
         "AUDIO_DIR": f"../fsc22_data/preprocessed/{args.features}",
 
         "BATCH_SIZE": 128,
@@ -103,7 +100,8 @@ def main(args):
 
         "DEVICE": "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu",
         
-         "CONTLEARN": args.contlearn
+        "CONTLEARN": args.contlearn,
+        "MODEL_STR": args.architecture
     }
     
     print(f"Using device {config['DEVICE']}")
@@ -114,7 +112,6 @@ def main(args):
     fsc22 = FSC22Dataset(annotations_file=config["ANNOTATIONS_FILE"], data_dir=config["AUDIO_DIR"], device=config["DEVICE"])
     dim1 = fsc22[0][0].shape[1]
     dim2 = fsc22[0][0].shape[2]
-    
     cnn = get_model(args.architecture, dim1, dim2, config["NUM_CLASSES"]).to(config["DEVICE"])
 
     if args.contlearn != None:
@@ -134,11 +131,6 @@ def main(args):
         test_size=config["TEST_SIZE"],
         batch_size=config["BATCH_SIZE"]
     )
-
-    # x = torch.randn(1, 1, dim1, dim2).to(config["DEVICE"])
-    # out = cnn(x)
-    # dot = make_dot(out, params=dict(list(cnn.named_parameters()) + [('input', x)]))
-    # dot.render('cnn_architecture', format='png', directory=f'logs/fsc22_{timestamp}/metadata')
 
     model = train(cnn, train_data_loader, val_data_loader, loss_fn, optimizer, scheduler, config["DEVICE"], config["EPOCHS"], 27, timestamp, early_stopping_patience=config["EARLY_STOPPING_PATIENCE"], min_delta=config["MIN_DELTA"])
 

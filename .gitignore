@@ -4,10 +4,13 @@
 /venv
 /fsc22_data
 /fsd50k_data
+/urbansound8k_data
 /pretrained_models
 /baseline/logs/
 /augmented/logs/
 /transfer_learning/logs
 /transfer_learning_v2/logs
+/transfer_learning_v3/logs
+/transfer_learning_v3
 __pycache__
 /baseline/tmp

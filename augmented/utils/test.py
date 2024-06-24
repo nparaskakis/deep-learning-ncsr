@@ -61,18 +61,22 @@ def test(model, data_loader, loss_fn, device, subset_name, num_classes, timestam
     cm = confusion_matrix(all_labels, all_preds)
     cm_df = pd.DataFrame(cm, index=[i for i in range(num_classes)], columns=[i for i in range(num_classes)])
     
-    cm_df.to_csv(f"logs/fsc22_{timestamp}/metadata/{subset_name}_confusion_matrix.csv", index=True)
+    if timestamp != None:
+        cm_df.to_csv(f"logs/fsc22_{timestamp}/metadata/{subset_name}_confusion_matrix.csv", index=True)
+    plt.figure(figsize=(10, 10))
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[i for i in range(num_classes)])
-    disp.plot(cmap=plt.cm.Blues)
+    disp.plot(cmap=plt.cm.Blues, ax=plt.gca())
+    plt.title(f"Confusion matrix on {subset_name} set")
     plt.show()
 
-    with open(f"logs/fsc22_{timestamp}/metadata/eval_on_{subset_name}_set.txt", 'w') as file:
-        file.write(f'Evaluation on {subset_name} set:\n')
-        file.write(f'Loss: {avg_test_loss_per_batch}\n')
-        file.write(f'Accuracy: {final_accuracy}\n')
-        file.write(f'Precision: {final_precision}\n')
-        file.write(f'Recall: {final_recall}\n')
-        file.write(f'F1 Score: {final_f1_score}\n')
+    if timestamp != None:
+        with open(f"logs/fsc22_{timestamp}/metadata/eval_on_{subset_name}_set.txt", 'w') as file:
+            file.write(f'Evaluation on {subset_name} set:\n')
+            file.write(f'Loss: {avg_test_loss_per_batch}\n')
+            file.write(f'Accuracy: {final_accuracy}\n')
+            file.write(f'Precision: {final_precision}\n')
+            file.write(f'Recall: {final_recall}\n')
+            file.write(f'F1 Score: {final_f1_score}\n')
 
     print(f'\nEvaluation on {subset_name} set:\n')
     print(f'Loss: {avg_test_loss_per_batch}')

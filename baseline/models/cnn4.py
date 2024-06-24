@@ -59,11 +59,11 @@ class CNNNetwork4(Module):
 
         self.classifier = nn.Sequential(
             nn.Linear(in_features=self.flattened_size, out_features=4096),
-            nn.BatchNorm1d(4096),
+            nn.BatchNorm1d(num_features=4096),
             nn.LeakyReLU(negative_slope=0.01),
             nn.Dropout(p= 0.5),
             nn.Linear(in_features=4096, out_features=4096),
-            nn.BatchNorm1d(4096),
+            nn.BatchNorm1d(num_features=4096),
             nn.LeakyReLU(negative_slope=0.01),
             nn.Dropout(p=0.5),
             nn.Linear(in_features=4096, out_features=num_classes)
@@ -74,6 +74,6 @@ class CNNNetwork4(Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        x = self.flatten(x)
+        x = self.flatten(x)      
         x = self.classifier(x)
         return x
