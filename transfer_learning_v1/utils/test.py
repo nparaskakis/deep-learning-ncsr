@@ -67,11 +67,11 @@ def test(model, data_loader, loss_fn, device, subset_name, num_classes, timestam
         cm_df = pd.DataFrame(mcm[i], index=[f'Class {i} Negative', f'Class {i} Positive'], columns=[f'Class {i} Negative', f'Class {i} Positive'])
         if timestamp != None:
             cm_df.to_csv(f"logs/fsd50k_{timestamp}/metadata/{subset_name}_confusion_matrix_class_{i}.csv", index=True)
-        plt.figure(figsize=(10, 10))
-        disp = ConfusionMatrixDisplay(confusion_matrix=mcm[i], display_labels=[f'Class {i} Negative', f'Class {i} Positive'])
-        disp.plot(cmap=plt.cm.Blues, ax=plt.gca())
-        plt.title(f'Confusion Matrix for Class {i} on {subset_name} set')
-        plt.show()
+        # plt.figure(figsize=(10, 10))
+        # disp = ConfusionMatrixDisplay(confusion_matrix=mcm[i], display_labels=[f'Class {i} Negative', f'Class {i} Positive'])
+        # disp.plot(cmap=plt.cm.Blues, ax=plt.gca())
+        # plt.title(f'Confusion Matrix for Class {i} on {subset_name} set')
+        # plt.show()
 
     if timestamp != None:
         with open(f"logs/fsd50k_{timestamp}/metadata/eval_on_{subset_name}_set.txt", 'w') as file:

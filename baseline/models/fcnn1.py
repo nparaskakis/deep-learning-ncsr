@@ -21,7 +21,7 @@ class FCNNNetwork1(Module):
         self.classifier = nn.Sequential(
             nn.Linear(in_features=self.flattened_size, out_features=512),
             nn.ReLU(),
-            nn.Dropout(),
+            nn.Dropout(p=0.5),
             nn.Linear(in_features=512, out_features=num_classes)
         )
 
