@@ -161,7 +161,7 @@ def main(args):
         for param in cnn.parameters():
             param.requires_grad = False
         
-        for param in cnn.features[16:].parameters():
+        for param in cnn.features[10:].parameters():
             param.requires_grad = True
         
         for param in cnn.avgpool.parameters():
