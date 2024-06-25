@@ -26,7 +26,7 @@ except ImportError:
 
 
 
-class FSC22Dataset(Dataset):
+class UrbDataset(Dataset):
 
     def __init__(self, annotations_file: str, data_dir: str, device, model_str):
         self.annotations = pd.read_csv(annotations_file)

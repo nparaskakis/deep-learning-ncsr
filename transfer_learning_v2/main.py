@@ -190,8 +190,8 @@ def main(args):
         for param in cnn.parameters():
             param.requires_grad = False
         
-        # for param in cnn.layer4.parameters():
-        #     param.requires_grad = True
+        for param in cnn.layer4.parameters():
+            param.requires_grad = True
         
         for param in cnn.classifier.parameters():
             param.requires_grad = True

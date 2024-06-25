@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 import argparse
-from utils.dataset import FSC22Dataset, get_data_loaders
+from utils.dataset import UrbDataset, get_data_loaders
 from utils.train import *
 from utils.test import *
 import torch.nn as nn
@@ -143,9 +143,9 @@ def main(args):
     config_file_path = f'logs/urb_{timestamp}/metadata/configurations.txt'
     write_config_to_file(config, config_file_path)
     
-    fsc22 = FSC22Dataset(annotations_file=config["ANNOTATIONS_FILE"], data_dir=config["AUDIO_DIR"], device=config["DEVICE"], model_str=config["MODEL_STR"])
-    dim1 = fsc22[0][0].shape[1]
-    dim2 = fsc22[0][0].shape[2]
+    urb = UrbDataset(annotations_file=config["ANNOTATIONS_FILE"], data_dir=config["AUDIO_DIR"], device=config["DEVICE"], model_str=config["MODEL_STR"])
+    dim1 = urb[0][0].shape[1]
+    dim2 = urb[0][0].shape[2]
     
     cnn = get_model(args.architecture, dim1, dim2, config["NUM_CLASSES"]).to(config["DEVICE"])
 
@@ -205,7 +205,7 @@ def main(args):
     scheduler = ReduceLROnPlateau(optimizer, 'min', patience=config["SCHEDULER_PATIENCE"], factor=0.1, min_lr=config["MIN_LR"])
 
     train_data_loader, val_data_loader, test_data_loader = get_data_loaders(
-        dataset=fsc22,
+        dataset=urb,
         train_size=config["TRAIN_SIZE"],
         val_size=config["VAL_SIZE"],
         test_size=config["TEST_SIZE"],
