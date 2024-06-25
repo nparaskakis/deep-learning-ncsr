@@ -2,6 +2,12 @@
 
 Repository for the project of the course "Deep Learning" in the MSc in Data Science of the NCSR "Demokritos".
 
+**Authors:**
+- **Nikolaos Paraskakis / I.D.: 2321**
+- **Dimitrios Tselentis / I.D.: 2325**
+
+June 2024
+
 # General description
 
 In this project, we try to make a classifier for the dataset FSC22, which is a dataset containing forest sounds. We experiment with various architectures:
