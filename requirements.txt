@@ -9,6 +9,5 @@ torchsummary
 tensorboard
 torchmetrics
 scikit-learn
-torchviz
 torch-audiomentations
 soundfile
