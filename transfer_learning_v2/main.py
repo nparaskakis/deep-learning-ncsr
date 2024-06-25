@@ -27,7 +27,8 @@ def get_model(architecture, dim1, dim2, num_classes):
     elif architecture == 'CNN4':
         from models.cnn4 import CNNNetwork4
         cnn4 = CNNNetwork4(dim1, dim2, num_classes)
-        pretrained_dict = torch.load('../pretrained_models/cnn4_pre_trained_fsd50k.pth', map_location=torch.device('cpu'))
+        # pretrained_dict = torch.load('../pretrained_models/cnn4_pre_trained_fsd50k.pth', map_location=torch.device('cpu'))
+        pretrained_dict = torch.load('../pretrained_models/cnn4_pre_trained_urb.pth', map_location=torch.device('cpu'))
         model_dict = cnn4.state_dict()
         pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict and 'classifier.8' not in k}
         model_dict.update(pretrained_dict)

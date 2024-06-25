@@ -25,6 +25,19 @@ The dataset itself was downloaded from https://annotator.freesound.org/fsd/relea
 
 # Main folders description
 
+Below, you will find a brief description for the main folders of this repository:
+- **baseline**: code to train models on FSC22 original dataset
+- **augmented**: code to train models on augmented FSC22 dataset
+- **transfer_learning_v1**: code to train models on FSD50K original dataset
+- **transfer_learning_v2**: code to train models on FSC22 original dataset
+- **transfer_learning_v3**: code to train models on FSC22 original dataset
+
+In the root of this repository you will find also the following files:
+- report.ipynb
+- requiremnets.txt
+- deep_learning_presentation.pdf
+
+
 
 <!-- Run as:
 
